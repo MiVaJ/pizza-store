@@ -16,12 +16,15 @@
 ```bash
 docker compose up -d
 ```
-*Это поднимет PostgreSQL 16 на порту 5432.*
+*Это поднимет PostgreSQL 16 на порту 5433.*
 
 ### 2. Запуск Бэкенда (FastAPI)
 Перейдите в папку бэкенда, активируйте виртуальное окружение и запустите сервер:
 ```bash
 cd backend
+
+# Создание виртуального окружения (ОБЯЗАТЕЛЬНО):
+python -m venv .venv
 
 # Активация окружения:
 .venv\Scripts\activate      # Для Windows (PowerShell)
