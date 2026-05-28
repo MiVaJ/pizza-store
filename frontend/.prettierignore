@@ -1,0 +1,8 @@
+# Не фронтэнд
+../backend/
+../.venv/
+../.vscode/
+
+# Технические папки
+node_modules/
+dist/
