@@ -1,0 +1,14 @@
+# Python / FastAPI
+__pycache__/
+*.pyc
+.venv/
+backend/.env
+
+# Node.js / React
+node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.development
+
+# Разное
+.DS_Store
