@@ -4,6 +4,11 @@ __pycache__/
 .venv/
 backend/.env
 
+# Кэш линтеров и инструментов Python
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
 # Node.js / React
 node_modules/
 frontend/dist/
@@ -12,3 +17,5 @@ frontend/.env.development
 
 # Разное
 .DS_Store
+.vscode/*
+!.vscode/settings.json 
