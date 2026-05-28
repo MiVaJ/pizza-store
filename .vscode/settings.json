@@ -1,5 +1,6 @@
 {
   "python.analysis.typeCheckingMode": "off",
+  "python.analysis.extraPaths": ["./backend/src"],
   "mypy.configFile": "backend/pyproject.toml",
 
   // Настройки форматирования при сохранении
