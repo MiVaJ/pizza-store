@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.routers.auth import router as auth_router
+from src.routers.menu import router as menu_router
 
 # Инициализация Sentry для отслеживания ошибок бэкенда
 sentry_sdk.init(
@@ -21,6 +22,7 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(menu_router)
 
 
 @app.get("/api/health")
