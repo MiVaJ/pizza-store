@@ -31,7 +31,7 @@ python -m venv .venv
 source .venv/bin/activate   # Для Linux/macOS
 
 # Запуск сервера:
-uvicorn main:app --reload
+uvicorn src.main:app --reload
 ```
 *Интерфейс API будет доступен по адресу: http://127.0.0.1:8000*
 
