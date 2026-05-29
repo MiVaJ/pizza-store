@@ -3,9 +3,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
-from src.core.security import hash_password
+from src.core.security import create_access_token, hash_password, verify_password
 from src.models.user import User
-from src.schemas.user import UserCreate, UserResponse
+from src.schemas.user import TokenResponse, UserCreate, UserLogin, UserResponse
 
 router = APIRouter(prefix="/api/auth", tags=["Авторизация"])
 
@@ -50,3 +50,30 @@ async def register_user(
     await db.refresh(new_user)
 
     return new_user
+
+
+@router.post("/login", response_model=TokenResponse)
+async def login_user(login_data: UserLogin, db: AsyncSession = Depends(get_db)) -> dict:
+    """Вход в систему.
+
+    Проверяет пароль и выдает JWT-токен.
+    """
+    # 1. Ищем пользователя в базе данных по почте
+    query = select(User).where(User.email == login_data.email)
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+
+    # 2. Если пользователя нет или пароль не совпал - выдаём ошибку
+    if not user or not verify_password(login_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверная электронная почта или пароль",
+        )
+
+    # 3. Зашиваем в токен базовые данные пользователя
+    token_data = {"sub": str(user.id), "role": user.role}
+
+    # 4. Генерируем токен
+    token = create_access_token(data=token_data)
+
+    return {"access_token": token, "token_type": "bearer"}

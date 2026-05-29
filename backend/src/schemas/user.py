@@ -46,3 +46,10 @@ class UserResponse(UserBase):
     class Config:
         # Pydantic настройка для чтения данных из ORM-моделей
         from_attributes = True
+
+
+class TokenResponse(BaseModel):
+    """Схема ответа сервера при успешном входе в систему."""
+
+    access_token: str = Field(..., description="Цифровой пропуск (JWT токен)")
+    token_type: str = Field("bearer", description="Тип токена")

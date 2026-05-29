@@ -1,8 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
-# Подключение к базе в Docker через асинхронный драйвер asyncpg
-DATABASE_URL = "postgresql+asyncpg://pizza_user:pizza_password@127.0.0.1:5433/pizza_db"
+from src.core.config import settings
+
+# Подключение к базе в Docker
+DATABASE_URL = settings.DATABASE_URL
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 async_session = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
