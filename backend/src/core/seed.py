@@ -24,7 +24,7 @@ async def seed_pizzas():
                     "Абсолютный хит: пикантные колбаски пепперони, "
                     "моцарелла и фирменный томатный соус."
                 ),
-                price=450.0,
+                price=45000,
                 image_url="https://unsplash.com",
             ),
             Pizza(
@@ -33,7 +33,7 @@ async def seed_pizzas():
                     "Абсолютный хит: пикантные колбаски пепперони, "
                     "моцарелла и фирменный томатный соус."
                 ),
-                price=550.0,
+                price=55000,
                 image_url="https://unsplash.com",
             ),
             Pizza(
@@ -42,7 +42,7 @@ async def seed_pizzas():
                     "Изысканное сочетание: моцарелла, пармезан, "
                     "чеддер и нежный сыр с голубой плесенью."
                 ),
-                price=600.0,
+                price=60000,
                 image_url="https://unsplash.com",
             ),
         ]

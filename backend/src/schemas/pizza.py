@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 
 class PizzaResponse(BaseModel):
@@ -7,9 +7,14 @@ class PizzaResponse(BaseModel):
     id: int = Field(..., description="Уникальный ID пиццы")
     name: str = Field(..., description="Название пиццы")
     description: str = Field(..., description="Описание состава и ингредиентов")
-    price: float = Field(..., description="Стоимость в рублях")
+    price: int = Field(..., description="Стоимость в рублях")
     image_url: str | None = Field(None, description="Ссылка на красивую картинку пиццы")
     is_available: bool = Field(..., description="Есть ли пицца в наличии в ресторане")
 
     class Config:
         from_attributes = True
+
+    @field_serializer("price")
+    def serialize_price(self, price: int) -> int:
+        """Автоматически переводит копейки из БД в рубли для фронтенда."""
+        return price // 100
