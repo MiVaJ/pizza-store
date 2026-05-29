@@ -62,6 +62,9 @@ npm run dev
 ### Запуск проверок вручную:
 ```bash
 cd backend
-python -m ruff check .
-python -m mypy .
+python -m ruff check .          # Проверка логических ошибок и импортов
+python -m ruff check . --fix    # Автоматическое исправление логических ошибок и импортов
+python -m ruff format --check . # Проверка стиля и отступо
+python -m ruff format .         # Автоматическое исправление стиля кода
+python -m mypy .                # Проверка строгой типизации
 ```
