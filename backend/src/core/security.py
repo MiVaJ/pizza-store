@@ -1,17 +1,19 @@
-from passlib.context import CryptContext
-
-# Контекст шифрования (алгоритм bcrypt)
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import bcrypt
 
 
 def hash_password(password: str) -> str:
-    """Принимает чистый пароль и возвращает его криптографический хеш."""
-    return pwd_context.hash(password)
+    """Принимает чистый текст пароля и возвращает его криптографический хеш."""
+    password_bytes = password.encode("utf-8")
+
+    salt = bcrypt.gensalt()
+    hashed_bytes = bcrypt.hashpw(password_bytes, salt)
+
+    return hashed_bytes.decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Сравнивает чистый пароль от пользователя с хешем из базы данных.
+    """Сравнивает чистый пароль от пользователя с хешем из базы данных."""
+    password_bytes = plain_password.encode("utf-8")
+    hashed_bytes = hashed_password.encode("utf-8")
 
-    Возвращает True, если они совпадают, иначе False.
-    """
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(password_bytes, hashed_bytes)
