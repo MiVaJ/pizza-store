@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useCartStore } from '@/store/useCartStore';
 
 export default function PizzaCard({ pizza }) {
-  const [count, setCount] = useState(0);
+  const addItem = useCartStore((state) => state.addItem);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const count = useCartStore((state) => state.getItemQuantity(pizza.id));
 
   return (
     <div
@@ -71,7 +74,7 @@ export default function PizzaCard({ pizza }) {
           {count === 0 ? (
             // Кнопка с текстом
             <Button
-              onClick={() => setCount(1)}
+              onClick={() => addItem(pizza)}
               className={cn(
                 'h-9 w-28 rounded-full text-xs font-bold cursor-pointer',
                 'bg-orange-100 text-orange-600 shadow-none transition-colors',
@@ -87,7 +90,7 @@ export default function PizzaCard({ pizza }) {
                 text-white shadow-sm select-none"
             >
               <button
-                onClick={() => setCount(count - 1)}
+                onClick={() => removeItem(pizza.id)}
                 className="flex h-7 w-7 items-center justify-center rounded-full text-base font-bold
                   transition hover:bg-orange-600 active:scale-90 cursor-pointer"
               >
@@ -95,7 +98,7 @@ export default function PizzaCard({ pizza }) {
               </button>
               <span className="text-xs font-bold">{count}</span>
               <button
-                onClick={() => setCount(count + 1)}
+                onClick={() => addItem(pizza)}
                 className="flex h-7 w-7 items-center justify-center rounded-full text-base font-bold
                   transition hover:bg-orange-600 active:scale-90 cursor-pointer"
               >
