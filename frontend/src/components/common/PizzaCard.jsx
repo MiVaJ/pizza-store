@@ -1,35 +1,46 @@
 import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export default function PizzaCard({ pizza }) {
   const [count, setCount] = useState(0);
 
   return (
     <div
-      className="group flex flex-col justify-between overflow-hidden rounded-2xl border
-        border-gray-100 bg-white shadow-sm transition-all duration-300 hover:shadow-md"
+      className={cn(
+        'group flex flex-col justify-between overflow-hidden',
+        'rounded-2xl border border-gray-100 bg-white shadow-sm',
+        'transition-all duration-300 hover:shadow-md',
+      )}
     >
       {/* Верхний блок: Картинка и Описание*/}
       <div
-        className="relative flex h-48 w-full items-center justify-center overflow-hidden
-          bg-transparent"
+        className={cn(
+          'relative flex h-48 w-full items-center justify-center',
+          'overflow-hidden bg-transparent',
+        )}
       >
         {/* Картинка */}
         {pizza.image_url && (
           <img
             src={pizza.image_url}
             alt={pizza.name}
-            className="h-full w-auto object-contain p-2 transition-all duration-300
-              group-hover:opacity-40 group-hover:blur-[3px]"
+            className={cn(
+              'h-full w-auto object-contain p-2 transition-all duration-300',
+              'group-hover:opacity-40 group-hover:blur-[3px]',
+            )}
           />
         )}
 
         {/* Адаптивная панель описания */}
         {pizza.description && (
           <div
-            className="absolute inset-x-0 bottom-0 flex hidden h-auto max-h-[85%] translate-y-[105%]
-              flex-col justify-end rounded-t-2xl border-t border-gray-100/50 bg-white/90 p-4
-              backdrop-blur-sm transition-transform duration-300 ease-out group-hover:translate-y-0
-              md:flex"
+            className={cn(
+              'absolute inset-x-0 bottom-0 translate-y-[105%] group-hover:translate-y-0',
+              'h-auto max-h-[85%] bg-white/90 backdrop-blur-sm p-4',
+              'transition-transform duration-300 ease-out flex-col justify-end',
+              'hidden md:flex border-t border-gray-100/50 rounded-t-2xl',
+            )}
           >
             <p className="mb-1 text-[10px] font-bold tracking-wider text-gray-400 uppercase">
               Описание:
@@ -59,14 +70,16 @@ export default function PizzaCard({ pizza }) {
           {/* Кнопка */}
           {count === 0 ? (
             // Кнопка с текстом
-            <button
+            <Button
               onClick={() => setCount(1)}
-              className="inline-flex h-9 w-28 items-center justify-center rounded-full bg-secondary
-                px-2 py-2 text-xs font-bold text-secondary-foreground shadow-sm transition-colors
-                hover:bg-orange-500 hover:text-white active:scale-95 duration-200 cursor-pointer"
+              className={cn(
+                'h-9 w-28 rounded-full text-xs font-bold cursor-pointer',
+                'bg-orange-100 text-orange-600 shadow-none transition-colors',
+                'hover:bg-orange-500 hover:text-white active:scale-95 duration-200',
+              )}
             >
               + В корзину
-            </button>
+            </Button>
           ) : (
             // Кнопка с отображением счётчика
             <div
