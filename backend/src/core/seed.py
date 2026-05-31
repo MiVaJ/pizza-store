@@ -1,6 +1,6 @@
 import asyncio
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from src.core.database import async_session
 from src.models.pizza import Pizza
@@ -15,14 +15,17 @@ async def seed_pizzas():
         if result.scalars().first():
             print("Меню уже содержит пиццы. Сидинг не требуется.")
             return
+        
+        # Принудительный сброс ID для тестов
+        await session.execute(text("ALTER SEQUENCE pizzas_id_seq RESTART WITH 1;"))
 
         # Стартовый набор пицц
         initial_pizzas = [
             Pizza(
                 name="Маргарита",
                 description=(
-                    "Абсолютный хит: пикантные колбаски пепперони, "
-                    "моцарелла и фирменный томатный соус."
+                    "Классический итальянский рецепт: сочные томаты, "
+                    "увеличенная порция моцареллы и ароматный базилик."
                 ),
                 price=45000,
                 image_url="https://unsplash.com",
@@ -43,6 +46,24 @@ async def seed_pizzas():
                     "чеддер и нежный сыр с голубой плесенью."
                 ),
                 price=60000,
+                image_url="https://unsplash.com",
+            ),
+            Pizza(
+                name="Мясная",
+                description=(
+                    "Сытная пицца для любителей мяса: цыпленок, "
+                    "острая чоризо, бекон, моцарелла и томатный соус."
+                ),
+                price=65000,
+                image_url="https://unsplash.com",
+            ),
+            Pizza(
+                name="Овощная",
+                description=(
+                    "Легкий выбор: сладкий перец, томаты, "
+                    "красный лук, маслины, кубики брынзы и моцарелла."
+                ),
+                price=49000,
                 image_url="https://unsplash.com",
             ),
         ]
