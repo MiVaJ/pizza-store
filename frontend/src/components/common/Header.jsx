@@ -1,6 +1,9 @@
 import React from 'react';
+import { useCartStore } from '@/store/useCartStore';
 
 export default function Header() {
+  const totalQuantity = useCartStore((state) => state.getTotalQuantity());
+
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 p-4 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between">
@@ -18,7 +21,12 @@ export default function Header() {
             text-white transition hover:bg-orange-600 shadow-sm"
         >
           <span>Корзина</span>
-          <span className="rounded-full bg-white/20 px-2 py-0.5 text-sm">0</span>
+          {/* ОТображаем цифру, только если в корзине что-то есть */}
+          {totalQuantity > 0 && (
+            <span className="rounded-full bg-white px-2 py-0.5 text-xs font-black text-orange-500">
+              {totalQuantity}
+            </span>
+          )}
         </button>
       </div>
     </header>
