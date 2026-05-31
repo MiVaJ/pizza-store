@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function PizzaCard({ pizza }) {
+  const [count, setCount] = useState(0);
+
   return (
     <div
       className="group flex flex-col justify-between overflow-hidden rounded-2xl border
@@ -55,13 +57,39 @@ export default function PizzaCard({ pizza }) {
           <span className="text-xl font-black text-gray-900">{pizza.price} ₽</span>
 
           {/* Кнопка */}
-          <button
-            className="bg-secondary text-secondary-foreground inline-flex h-9 cursor-pointer
-              items-center justify-center rounded-full px-4 py-2 text-xs font-bold shadow-sm
-              transition-colors duration-200 hover:bg-orange-500 hover:text-white active:scale-95"
-          >
-            + В корзину
-          </button>
+          {count === 0 ? (
+            // Кнопка с текстом
+            <button
+              onClick={() => setCount(1)}
+              className="inline-flex h-9 w-28 items-center justify-center rounded-full bg-secondary
+                px-2 py-2 text-xs font-bold text-secondary-foreground shadow-sm transition-colors
+                hover:bg-orange-500 hover:text-white active:scale-95 duration-200 cursor-pointer"
+            >
+              + В корзину
+            </button>
+          ) : (
+            // Кнопка с отображением счётчика
+            <div
+              className="flex h-9 w-28 items-center justify-between rounded-full bg-orange-500 p-1
+                text-white shadow-sm select-none"
+            >
+              <button
+                onClick={() => setCount(count - 1)}
+                className="flex h-7 w-7 items-center justify-center rounded-full text-base font-bold
+                  transition hover:bg-orange-600 active:scale-90 cursor-pointer"
+              >
+                -
+              </button>
+              <span className="text-xs font-bold">{count}</span>
+              <button
+                onClick={() => setCount(count + 1)}
+                className="flex h-7 w-7 items-center justify-center rounded-full text-base font-bold
+                  transition hover:bg-orange-600 active:scale-90 cursor-pointer"
+              >
+                +
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
