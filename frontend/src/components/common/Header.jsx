@@ -1,5 +1,6 @@
 import React from 'react';
 import { useCartStore } from '@/store/useCartStore';
+import AnimatedNumber from '@/components/common/AnimatedNumber';
 
 export default function Header() {
   const totalQuantity = useCartStore((state) => state.getTotalQuantity());
@@ -34,14 +35,14 @@ export default function Header() {
               Корзина
             </span>
 
-            <span
+            <div
               className={`absolute inset-0 flex items-center justify-center transition-all
                 duration-300 ease-in-out tracking-tight ${
                   totalQuantity === 0 ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'
                 }`}
             >
-              {totalPrice} ₽
-            </span>
+              <AnimatedNumber value={totalPrice} />
+            </div>
           </div>
         </button>
       </div>
