@@ -3,6 +3,7 @@ import { useCartStore } from '@/store/useCartStore';
 
 export default function Header() {
   const totalQuantity = useCartStore((state) => state.getTotalQuantity());
+  const totalPrice = useCartStore((state) => state.getTotalPrice());
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 p-4 backdrop-blur-md">
@@ -17,16 +18,31 @@ export default function Header() {
 
         {/* Кнопка корзины */}
         <button
-          className="flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2.5 font-bold
-            text-white transition hover:bg-orange-600 shadow-sm"
+          className="group relative flex h-11 w-36 items-center justify-center overflow-hidden
+            rounded-full bg-orange-500 px-4 font-bold text-white shadow-sm transition-all
+            duration-300 hover:bg-orange-600 active:scale-95 md:w-40 md:text-base text-sm
+            cursor-pointer select-none"
         >
-          <span>Корзина</span>
-          {/* ОТображаем цифру, только если в корзине что-то есть */}
-          {totalQuantity > 0 && (
-            <span className="rounded-full bg-white px-2 py-0.5 text-xs font-black text-orange-500">
-              {totalQuantity}
+          {/* Отображаем общую стоимость, если пользвоатель добавил пиццу в корзину */}
+          <div className="relative h-5 w-20 overflow-hidden">
+            <span
+              className={`absolute inset-0 flex items-center justify-center transition-all
+                duration-300 ease-in-out ${
+                  totalQuantity === 0 ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
+                }`}
+            >
+              Корзина
             </span>
-          )}
+
+            <span
+              className={`absolute inset-0 flex items-center justify-center transition-all
+                duration-300 ease-in-out tracking-tight ${
+                  totalQuantity === 0 ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'
+                }`}
+            >
+              {totalPrice} ₽
+            </span>
+          </div>
         </button>
       </div>
     </header>
