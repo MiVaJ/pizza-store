@@ -44,9 +44,14 @@ export const useCartStore = create(
         }
       },
 
-      // Считаем общее количество ВСЕХ пицц в корзине для вывода в шапку сайта
+      // Считаем общее количество ВСЕХ пицц в корзине
       getTotalQuantity: () => {
         return get().items.reduce((total, item) => total + item.quantity, 0);
+      },
+
+      // Считаем общую стоимость ВСЕХ пицц в корзине
+      getTotalPrice: () => {
+        return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
       },
 
       // Функция для получения количества конкретной пиццы по её id
