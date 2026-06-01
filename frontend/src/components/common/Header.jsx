@@ -3,8 +3,8 @@ import { useCartStore } from '@/store/useCartStore';
 import AnimatedNumber from '@/components/common/AnimatedNumber';
 
 export default function Header() {
-  const totalQuantity = useCartStore((state) => state.getTotalQuantity());
-  const totalPrice = useCartStore((state) => state.getTotalPrice());
+  const totalQuantity = useCartStore((state) => state.totalQuantity);
+  const totalPrice = useCartStore((state) => state.totalPrice);
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 p-4 backdrop-blur-md">

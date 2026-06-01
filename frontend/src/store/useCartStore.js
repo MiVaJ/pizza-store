@@ -1,27 +1,38 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+// Рассчитываем итоги
+const calculateTotals = (items) => {
+  const totalQuantity = items.reduce((total, item) => total + item.quantity, 0);
+  const totalPrice = items.reduce((total, item) => total + item.price * item.quantity, 0);
+  return { totalQuantity, totalPrice };
+};
+
 export const useCartStore = create(
   persist(
     (set, get) => ({
       items: [],
+      totalQuantity: 0, // Итоговое количество
+      totalPrice: 0, // Итоговая стоимость
 
       // Функция добавления пиццы или увеличения её количества
       addItem: (pizza) => {
         const currentItems = get().items;
         const existingItem = currentItems.find((item) => item.id === pizza.id);
+        let newItems;
 
         if (existingItem) {
-          // Если пицца уже в корзине, увеличиваем её количество на 1
-          set({
-            items: currentItems.map((item) =>
-              item.id === pizza.id ? { ...item, quantity: item.quantity + 1 } : item,
-            ),
-          });
+          newItems = currentItems.map((item) =>
+            item.id === pizza.id ? { ...item, quantity: item.quantity + 1 } : item,
+          );
         } else {
-          // Если пиццы нет, добавляем её как новый объект с количеством 1
-          set({ items: [...currentItems, { ...pizza, quantity: 1 }] });
+          newItems = [...currentItems, { ...pizza, quantity: 1 }];
         }
+
+        // Рассчитываем итоговые значения после изменения состояния
+        const { totalQuantity, totalPrice } = calculateTotals(newItems);
+
+        set({ items: newItems, totalQuantity, totalPrice });
       },
 
       // Функция уменьшения количества или удаления пиццы, если количество стало 0
@@ -30,28 +41,21 @@ export const useCartStore = create(
         const existingItem = currentItems.find((item) => item.id === pizzaId);
 
         if (!existingItem) return;
+        let newItems;
 
         if (existingItem.quantity === 1) {
           // Если была всего 1 пицца, полностью удаляем её из массива
-          set({ items: currentItems.filter((item) => item.id !== pizzaId) });
+          newItems = currentItems.filter((item) => item.id !== pizzaId);
         } else {
           // Если пицц больше, уменьшаем количество на 1
-          set({
-            items: currentItems.map((item) =>
-              item.id === pizzaId ? { ...item, quantity: item.quantity - 1 } : item,
-            ),
-          });
+          newItems = currentItems.map((item) =>
+            item.id === pizzaId ? { ...item, quantity: item.quantity - 1 } : item,
+          );
         }
-      },
 
-      // Считаем общее количество ВСЕХ пицц в корзине
-      getTotalQuantity: () => {
-        return get().items.reduce((total, item) => total + item.quantity, 0);
-      },
-
-      // Считаем общую стоимость ВСЕХ пицц в корзине
-      getTotalPrice: () => {
-        return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
+        // Вызываем функцию для рассчёта итоговых сумм
+        const { totalQuantity, totalPrice } = calculateTotals(newItems);
+        set({ items: newItems, totalQuantity, totalPrice });
       },
 
       // Функция для получения количества конкретной пиццы по её id
