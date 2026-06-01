@@ -1,5 +1,6 @@
 import React from 'react';
 import { useCartStore } from '@/store/useCartStore';
+import CartSheet from '@/components/common/CartSheet';
 import AnimatedNumber from '@/components/common/AnimatedNumber';
 
 export default function Header() {
@@ -18,33 +19,38 @@ export default function Header() {
         </div>
 
         {/* Кнопка корзины */}
-        <button
-          className="group relative flex h-11 w-36 items-center justify-center overflow-hidden
-            rounded-full bg-orange-500 px-4 font-bold text-white shadow-sm transition-all
-            duration-300 hover:bg-orange-600 active:scale-95 md:w-40 md:text-base text-sm
-            cursor-pointer select-none"
-        >
-          {/* Отображаем общую стоимость, если пользвоатель добавил пиццу в корзину */}
-          <div className="relative h-5 w-20 overflow-hidden">
-            <span
-              className={`absolute inset-0 flex items-center justify-center transition-all
-                duration-300 ease-in-out ${
-                  totalQuantity === 0 ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
-                }`}
-            >
-              Корзина
-            </span>
+        <CartSheet>
+          <button
+            className="group relative flex h-11 w-36 items-center justify-center overflow-hidden
+              rounded-full bg-orange-500 px-4 font-bold text-white shadow-sm transition-all
+              duration-300 hover:bg-orange-600 active:scale-95 md:w-40 md:text-base text-sm
+              cursor-pointer select-none"
+          >
+            {/* Отображаем общую стоимость, если пользвоатель добавил пиццу в корзину */}
 
-            <div
-              className={`absolute inset-0 flex items-center justify-center transition-all
-                duration-300 ease-in-out tracking-tight ${
-                  totalQuantity === 0 ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'
-                }`}
-            >
-              <AnimatedNumber value={totalPrice} />
+            <div className="relative h-5 w-20 overflow-hidden">
+              <span
+                className={`absolute inset-0 flex items-center justify-center transition-all
+                  duration-300 ease-in-out ${
+                    totalQuantity === 0
+                      ? 'translate-y-0 opacity-100'
+                      : '-translate-y-full opacity-0'
+                  }`}
+              >
+                Корзина
+              </span>
+
+              <div
+                className={`absolute inset-0 flex items-center justify-center transition-all
+                  duration-300 ease-in-out tracking-tight ${
+                    totalQuantity === 0 ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'
+                  }`}
+              >
+                <AnimatedNumber value={totalPrice} />
+              </div>
             </div>
-          </div>
-        </button>
+          </button>
+        </CartSheet>
       </div>
     </header>
   );
