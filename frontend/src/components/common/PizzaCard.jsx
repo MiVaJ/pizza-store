@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useCartStore } from '@/store/useCartStore';
+import { useCartStore } from '@/store';
 
 export default function PizzaCard({ pizza }) {
   const addItem = useCartStore((state) => state.addItem);

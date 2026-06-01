@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '@/core/api';
-import PizzaCard from '@/components/common/PizzaCard';
+import { PizzaCard } from '@/components';
 
 export default function MenuSection() {
   const [pizzas, setPizzas] = useState([]);

@@ -1,7 +1,7 @@
 import React from 'react';
-import { useCartStore } from '@/store/useCartStore';
-import CartSheet from '@/components/common/CartSheet';
-import AnimatedNumber from '@/components/common/AnimatedNumber';
+import { useCartStore } from '@/store';
+import { CartSheet } from '@/components';
+import AnimatedNumber from './AnimatedNumber';
 
 export default function Header() {
   const totalQuantity = useCartStore((state) => state.totalQuantity);
