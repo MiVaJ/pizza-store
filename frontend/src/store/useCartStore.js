@@ -26,7 +26,7 @@ export const useCartStore = create(
             item.id === pizza.id ? { ...item, quantity: item.quantity + 1 } : item,
           );
         } else {
-          newItems = [...currentItems, { ...pizza, quantity: 1 }];
+          newItems = [{ ...pizza, quantity: 1 }, ...currentItems];
         }
 
         // Рассчитываем итоговые значения после изменения состояния
