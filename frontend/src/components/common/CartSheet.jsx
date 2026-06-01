@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useCartStore } from '@/store';
 import NumberFlow from '@number-flow/react';
 import {
@@ -10,6 +10,34 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 
+// Временные Mock-данные для соусов до реализации на Бэкэнде
+const MOCK_SAUCES = [
+  {
+    id: 101,
+    name: 'Фирменный томатный',
+    price: 40,
+    image_url: 'https://unsplash.com',
+  },
+  {
+    id: 102,
+    name: 'Чесночный (Ранч)',
+    price: 40,
+    image_url: 'https://unsplash.com',
+  },
+  {
+    id: 103,
+    name: 'Сырный соус',
+    price: 45,
+    image_url: 'https://unsplash.com',
+  },
+  {
+    id: 104,
+    name: 'Барбекю (BBQ)',
+    price: 40,
+    image_url: 'https://unsplash.com',
+  },
+];
+
 // children — это кнопка из Header, которая обёрнута в CartSheet
 export default function CartSheet({ children }) {
   const items = useCartStore((state) => state.items);
@@ -17,6 +45,21 @@ export default function CartSheet({ children }) {
   const totalPrice = useCartStore((state) => state.totalPrice);
   const addItem = useCartStore((state) => state.addItem);
   const removeItem = useCartStore((state) => state.removeItem);
+
+  // Создаём ссылку на блок соусов, чтобы управлять его прокруткой
+  const sauceScrollRef = useRef(null);
+
+  // Функция, которая переводит вертикальный скролл мыши в горизонтальное движение соусов
+  const handleWheel = (e) => {
+    if (sauceScrollRef.current) {
+      e.preventDefault();
+
+      sauceScrollRef.current.scrollTo({
+        left: sauceScrollRef.current.scrollLeft + e.deltaY * 1.2,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   return (
     <Sheet>
@@ -26,11 +69,11 @@ export default function CartSheet({ children }) {
       {/* Шторка */}
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md flex flex-col justify-between p-6 bg-white border-l
+        className="w-full sm:!max-w-[460px] flex flex-col justify-between p-6 bg-white border-l
           border-gray-100"
       >
         {/* Верхний блок: Шапка шторки */}
-        <SheetHeader className="border-b border-gray-50 pb-4">
+        <SheetHeader className="border-b border-gray-100 pb-4">
           <SheetTitle className="text-xl font-black text-gray-900 flex items-center gap-2">
             Корзина{' '}
             {totalQuantity > 0 && (
@@ -45,7 +88,7 @@ export default function CartSheet({ children }) {
         </SheetHeader>
 
         {/* Средний блок: Список пицц или экран пустой корзины */}
-        <div className="flex-grow overflow-y-auto py-4">
+        <div className="flex-grow overflow-y-auto !-mt-4 pt-4 pb-4 space-y-3 scrollbar-none">
           {items.length === 0 ? (
             //Если пиццы нет, то показываем, что корзина пуста
             <div
@@ -60,23 +103,23 @@ export default function CartSheet({ children }) {
             </div>
           ) : (
             // Если пицца есть, то отображаем её циклом .map()
-            <div className="space-y-4">
+            <div className="space-y-3">
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between gap-4 border-b border-gray-50 pb-4
-                    animate-fade-in"
+                  className="flex items-center justify-between gap-4 bg-gray-50/80 p-3 rounded-xl
+                    border border-gray-100/60 animate-fade-in"
                 >
                   {/* Мини-картинка (на маленьких дисплеях скрывается) */}
                   <div
                     className="h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl
-                      bg-gray-50 p-1 hidden sm:flex"
+                      bg-white border border-gray-100 p-1 hidden sm:flex shadow-sm"
                   >
                     {item.image_url && (
                       <img
                         src={item.image_url}
                         alt={item.name}
-                        className="h-full w-full object-contain"
+                        className="h-full w-full object-contain rounded-lg"
                       />
                     )}
                   </div>
@@ -84,28 +127,30 @@ export default function CartSheet({ children }) {
                   {/* Текстовый блок: Название и цена за штуку */}
                   <div className="flex-grow">
                     <h4 className="text-sm font-bold text-gray-800 line-clamp-1">{item.name}</h4>
-                    <p className="text-xs text-gray-400 font-medium mt-0.5">{item.price} ₽</p>
+                    <p className="text-sm font-extrabold text-gray-400 mt-0.5">{item.price} ₽</p>
                   </div>
 
                   {/* Кнопочный блок управления количеством товара */}
                   <div
-                    className="flex items-center gap-2.5 bg-gray-50 border border-gray-100
-                      rounded-full p-1 h-8 select-none"
+                    className="flex items-center gap-3 bg-orange-500 rounded-full p-1 h-9
+                      select-none shadow-md shadow-orange-500/10"
                   >
                     <button
                       onClick={() => removeItem(item.id)}
-                      className="flex h-6 w-6 items-center justify-center rounded-full text-sm
-                        font-bold text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer"
+                      className="flex h-7 w-7 items-center justify-center rounded-full text-base
+                        font-black text-white hover:bg-orange-600 transition-all active:scale-90
+                        cursor-pointer"
                     >
                       -
                     </button>
-                    <span className="text-xs font-black text-gray-800 w-3 text-center">
+                    <span className="text-sm font-black text-white w-4 text-center">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() => addItem(item)}
-                      className="flex h-6 w-6 items-center justify-center rounded-full text-sm
-                        font-bold text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer"
+                      className="flex h-7 w-7 items-center justify-center rounded-full text-base
+                        font-black text-white hover:bg-orange-600 transition-all active:scale-90
+                        cursor-pointer"
                     >
                       +
                     </button>
@@ -116,27 +161,72 @@ export default function CartSheet({ children }) {
           )}
         </div>
 
-        {/* Нижний блок: Итоговый чек и кнопка (отображаются только если есть товары) */}
+        {/* Нижний блок: Карусель соусов, Итоговый чек и Кнопка */}
         {items.length > 0 && (
-          <div className="border-t border-gray-50 pt-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-400">Итого к оплате:</span>
+          <div className="border-t border-gray-100 pt-4 space-y-5 bg-white">
+            {/* Блок соусов */}
+            <div className="space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">
+                Добавить к заказу?
+              </p>
+
               <div
-                className="flex items-center text-xl font-black text-gray-900 tabular-nums
-                  tracking-tight"
+                ref={sauceScrollRef}
+                onWheel={handleWheel}
+                className="flex gap-3 overflow-x-auto pb-1 scrollbar-none scroll-smooth select-none"
               >
-                <NumberFlow value={totalPrice} />
-                <span className="ml-0.5">₽</span>
+                {MOCK_SAUCES.map((sauce) => (
+                  <div
+                    key={sauce.id}
+                    className="w-28 flex-shrink-0 border border-gray-100 bg-gray-50/50 p-3
+                      rounded-xl flex flex-col items-center justify-between text-center
+                      hover:border-orange-200 transition-colors"
+                  >
+                    <img
+                      src={sauce.image_url}
+                      alt={sauce.name}
+                      className="h-12 w-12 object-cover rounded-lg shadow-sm mix-blend-multiply"
+                    />
+                    <h5
+                      className="text-[10px] font-bold text-gray-700 mt-2 line-clamp-2 h-7
+                        leading-tight"
+                    >
+                      {sauce.name}
+                    </h5>
+                    <button
+                      onClick={() => addItem(sauce)}
+                      className="mt-2.5 w-full h-6 bg-white border border-orange-200
+                        hover:bg-orange-500 hover:text-white text-[10px] font-black text-orange-600
+                        rounded-lg transition-all active:scale-95 cursor-pointer shadow-sm"
+                    >
+                      +{sauce.price} ₽
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <button
-              className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm
-                rounded-xl shadow-sm transition-colors active:scale-[0.99] duration-150
-                cursor-pointer"
-            >
-              Перейти к оформлению
-            </button>
+            {/* Итоговый чек */}
+            <div className="space-y-4 border-t border-gray-50 pt-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-400">Итого к оплате:</span>
+                <div
+                  className="flex items-center text-xl font-black text-gray-900 tabular-nums
+                    tracking-tight"
+                >
+                  <NumberFlow value={totalPrice} />
+                  <span className="ml-0.5">₽</span>
+                </div>
+              </div>
+
+              <button
+                className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white font-bold
+                  text-sm rounded-xl shadow-sm transition-colors active:scale-[0.99] duration-150
+                  cursor-pointer"
+              >
+                Перейти к оформлению
+              </button>
+            </div>
           </div>
         )}
       </SheetContent>
