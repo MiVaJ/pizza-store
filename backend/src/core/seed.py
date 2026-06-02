@@ -1,23 +1,58 @@
 import asyncio
 
-from sqlalchemy import select, text
+from sqlalchemy import text
 
 from src.core.database import async_session
+from src.models.ingredient import Ingredient
 from src.models.pizza import Pizza
 
 
 async def seed_pizzas():
     """Скрипт для первоначального наполнения меню пиццами."""
     async with async_session() as session:
-        # Проверка, есть ли уже пиццы в базе, чтобы не дублировать их
-        query = select(Pizza)
-        result = await session.execute(query)
-        if result.scalars().first():
-            print("Меню уже содержит пиццы. Сидинг не требуется.")
-            return
-        
-        # Принудительный сброс ID для тестов
-        await session.execute(text("ALTER SEQUENCE pizzas_id_seq RESTART WITH 1;"))
+        # Полная очистка таблиц перед Сидингом
+        await session.execute(
+            text(
+                """
+                TRUNCATE TABLE 
+                    pizzas, 
+                    ingredients, 
+                    pizza_ingredients 
+                RESTART IDENTITY CASCADE;
+                """
+            )
+        )
+        await session.commit()
+
+        # Стартовый набор соусов
+        sauces = [
+            Ingredient(
+                name="Фирменный томатный",
+                price=4000,
+                image_url="https://unsplash.com",
+                is_sauce=True,
+            ),
+            Ingredient(
+                name="Чесночный (Ранч)",
+                price=4000,
+                image_url="https://unsplash.com",
+                is_sauce=True,
+            ),
+            Ingredient(
+                name="Сырный соус",
+                price=4500,
+                image_url="https://unsplash.com",
+                is_sauce=True,
+            ),
+            Ingredient(
+                name="Барбекю (BBQ)",
+                price=4000,
+                image_url="https://unsplash.com",
+                is_sauce=True,
+            ),
+        ]
+        session.add_all(sauces)
+        await session.flush()
 
         # Стартовый набор пицц
         initial_pizzas = [
@@ -70,7 +105,7 @@ async def seed_pizzas():
 
         session.add_all(initial_pizzas)
         await session.commit()
-        print("База данных успешно наполнена стартовыми пиццами.")
+        print("База данных успешно наполнена стартовыми пиццами и соусами.")
 
 
 if __name__ == "__main__":
