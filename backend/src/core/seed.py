@@ -3,7 +3,7 @@ import asyncio
 from sqlalchemy import text
 
 from src.core.database import async_session
-from src.models.ingredient import Ingredient
+from src.models.ingredient import Ingredient, PizzaIngredient
 from src.models.pizza import Pizza
 
 
@@ -55,7 +55,7 @@ async def seed_pizzas():
         await session.flush()
 
         # Стартовый набор пицц
-        initial_pizzas = [
+        pizzas = [
             Pizza(
                 name="Маргарита",
                 description=(
@@ -103,9 +103,19 @@ async def seed_pizzas():
             ),
         ]
 
-        session.add_all(initial_pizzas)
+        session.add_all(pizzas)
+        await session.flush()
+
+        connections = []
+        for pizza in pizzas:
+            for sauce in sauces:
+                connections.append(
+                    PizzaIngredient(pizza_id=pizza.id, ingredient_id=sauce.id)
+                )
+        session.add_all(connections)
         await session.commit()
         print("База данных успешно наполнена стартовыми пиццами и соусами.")
+        print("Заполнена таблица связей.")
 
 
 if __name__ == "__main__":
