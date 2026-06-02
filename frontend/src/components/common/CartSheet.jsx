@@ -72,8 +72,6 @@ export default function CartSheet({ children }) {
   // Функция, которая переводит вертикальный скролл мыши в горизонтальное движение соусов
   const handleWheel = (e) => {
     if (sauceScrollRef.current) {
-      e.preventDefault();
-
       sauceScrollRef.current.scrollTo({
         left: sauceScrollRef.current.scrollLeft + e.deltaY * 1.2,
         behavior: 'smooth',
