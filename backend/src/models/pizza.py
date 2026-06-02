@@ -1,7 +1,12 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import Boolean, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.database import Base
+
+if TYPE_CHECKING:
+    from src.models.ingredient import Ingredient
 
 
 class Pizza(Base):
@@ -15,3 +20,7 @@ class Pizza(Base):
     price: Mapped[int] = mapped_column(Integer, nullable=False)
     image_url: Mapped[str] = mapped_column(String(255), nullable=True)
     is_available: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    ingredients: Mapped[list["Ingredient"]] = relationship(
+        secondary="pizza_ingredients", back_populates="pizzas", lazy="selectin"
+    )
