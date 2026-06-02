@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useCartStore } from '@/store';
 import NumberFlow from '@number-flow/react';
 import {
@@ -10,33 +10,53 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 
-// Временные Mock-данные для соусов до реализации на Бэкэнде
-const MOCK_SAUCES = [
-  {
-    id: 101,
-    name: 'Фирменный томатный',
-    price: 40,
-    image_url: 'https://unsplash.com',
-  },
-  {
-    id: 102,
-    name: 'Чесночный (Ранч)',
-    price: 40,
-    image_url: 'https://unsplash.com',
-  },
-  {
-    id: 103,
-    name: 'Сырный соус',
-    price: 45,
-    image_url: 'https://unsplash.com',
-  },
-  {
-    id: 104,
-    name: 'Барбекю (BBQ)',
-    price: 40,
-    image_url: 'https://unsplash.com',
-  },
-];
+function SauceCard({ sauce, onAdd }) {
+  // Флаг: сломалась Картинка или нет.
+  const [isImageBroken, setIsImageBroken] = useState(false);
+
+  // Создаём уникальный ID, чтобы соусы не конфликтовали с ID пицц
+  const uniqueId = `sauce-${sauce.id}`;
+
+  return (
+    <div
+      className="w-28 flex-shrink-0 border border-gray-100 bg-gray-50/50 p-3 rounded-xl flex
+        flex-col items-center justify-between text-center hover:border-orange-200 transition-colors"
+    >
+      {/* Картинка соуса */}
+      <div
+        className="h-12 w-12 flex items-center justify-center rounded-lg shadow-sm bg-white
+          overflow-hidden"
+      >
+        {sauce.image_url && !isImageBroken ? (
+          <img
+            src={sauce.image_url}
+            alt={sauce.name}
+            className="h-full w-full object-cover"
+            // В случае ошибки, состояние изменится автоматически
+            onError={() => setIsImageBroken(true)}
+          />
+        ) : (
+          // Вывод иконки, если произошла ошибка загрузки картинки
+          <span className="text-2xl">🥫</span>
+        )}
+      </div>
+
+      <h5 className="text-[10px] font-bold text-gray-700 mt-2 line-clamp-2 h-7 leading-tight">
+        {sauce.name}
+      </h5>
+
+      {/* Кнопка добавления соуса в корзину */}
+      <button
+        onClick={() => onAdd({ ...sauce, id: uniqueId })}
+        className="mt-2.5 w-full h-6 bg-white border border-orange-200 hover:bg-orange-500
+          hover:text-white text-[10px] font-black text-orange-600 rounded-lg transition-all
+          active:scale-95 cursor-pointer shadow-sm"
+      >
+        +{sauce.price} ₽
+      </button>
+    </div>
+  );
+}
 
 // children — это кнопка из Header, которая обёрнута в CartSheet
 export default function CartSheet({ children }) {
@@ -60,6 +80,17 @@ export default function CartSheet({ children }) {
       });
     }
   };
+
+  // Получаем все ингредиенты, которые прикреплены к текущим пиццам в корзине
+  const allIngredients = items.flatMap((item) => item.ingredients || []);
+
+  // Получаем только соусы из всех ингредиентов
+  const rawSauces = allIngredients.filter((ing) => ing.is_sauce === true);
+
+  // Оставляем только уникальные значения соусов
+  const dynamicSauces = Array.from(
+    new Map(rawSauces.map((sauce) => [sauce.id, sauce.id])).values(),
+  ).map((id) => rawSauces.find((sauce) => sauce.id === id));
 
   return (
     <Sheet>
@@ -165,46 +196,26 @@ export default function CartSheet({ children }) {
         {items.length > 0 && (
           <div className="border-t border-gray-100 pt-4 space-y-5 bg-white">
             {/* Блок соусов */}
-            <div className="space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">
-                Добавить к заказу?
-              </p>
+            {dynamicSauces.length > 0 && (
+              // Отображаем соусы, если они доступны для добавленных пицц
+              <div className="space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">
+                  Добавить к заказу?
+                </p>
 
-              <div
-                ref={sauceScrollRef}
-                onWheel={handleWheel}
-                className="flex gap-3 overflow-x-auto pb-1 scrollbar-none scroll-smooth select-none"
-              >
-                {MOCK_SAUCES.map((sauce) => (
-                  <div
-                    key={sauce.id}
-                    className="w-28 flex-shrink-0 border border-gray-100 bg-gray-50/50 p-3
-                      rounded-xl flex flex-col items-center justify-between text-center
-                      hover:border-orange-200 transition-colors"
-                  >
-                    <img
-                      src={sauce.image_url}
-                      alt={sauce.name}
-                      className="h-12 w-12 object-cover rounded-lg shadow-sm mix-blend-multiply"
-                    />
-                    <h5
-                      className="text-[10px] font-bold text-gray-700 mt-2 line-clamp-2 h-7
-                        leading-tight"
-                    >
-                      {sauce.name}
-                    </h5>
-                    <button
-                      onClick={() => addItem(sauce)}
-                      className="mt-2.5 w-full h-6 bg-white border border-orange-200
-                        hover:bg-orange-500 hover:text-white text-[10px] font-black text-orange-600
-                        rounded-lg transition-all active:scale-95 cursor-pointer shadow-sm"
-                    >
-                      +{sauce.price} ₽
-                    </button>
-                  </div>
-                ))}
+                <div
+                  ref={sauceScrollRef}
+                  onWheel={handleWheel}
+                  className="flex gap-3 overflow-x-auto pb-1 scrollbar-none scroll-smooth
+                    select-none"
+                >
+                  {/* Вызываем компонент отображения соусов */}
+                  {dynamicSauces.map((sauce) => (
+                    <SauceCard key={sauce.id} sauce={sauce} onAdd={addItem} />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Итоговый чек */}
             <div className="space-y-4 border-t border-gray-50 pt-3">
