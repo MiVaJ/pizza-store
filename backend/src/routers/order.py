@@ -98,3 +98,20 @@ async def create_order(order_data: OrderCreate, db: AsyncSession = Depends(get_d
     saved_order = result.scalar_one()
 
     return saved_order
+
+
+@router.get("/", response_model=list[OrderResponse], status_code=status.HTTP_200_OK)
+async def get_orders_history(db: AsyncSession = Depends(get_db)):
+    """Получение истории всех оформленных заказов."""
+
+    # Делаем запрос ко всем заказам и сортируем по дате создания
+    query = (
+        select(Order)
+        .options(selectinload(Order.items))
+        .order_by(Order.created_at.desc())
+    )
+
+    result = await db.execute(query)
+    orders = result.scalars().all()
+
+    return orders
