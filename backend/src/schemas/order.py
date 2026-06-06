@@ -4,6 +4,7 @@ from pydantic import (
     BaseModel,
     Field,
     field_validator,
+    model_validator,
 )
 
 from src.models.order import OrderStatus
@@ -21,14 +22,14 @@ class OrderItemCreate(BaseModel):
     quantity: int = Field(..., description="Количество", ge=1)
 
     # Проверяем, что в строке корзины есть хотя бы один товар
-    @field_validator("pizza_id")
-    @classmethod
-    def validate_product_presence(cls, v: int | None, info) -> int | None:
-        if v is None and info.data.get("ingredient_id") is None:
+    @model_validator(mode="after")
+    def check_product_presence(self) -> "OrderItemCreate":
+        # self — это уже собранный объект строки чека
+        if self.pizza_id is None and self.ingredient_id is None:
             raise ValueError(
                 "В строке заказа должен быть указан либо ID пиццы, либо ID соуса"
             )
-        return v
+        return self
 
 
 class OrderCreate(BaseModel):
