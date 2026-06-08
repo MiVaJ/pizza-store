@@ -4,10 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.core.database import get_db
+from src.core.dependencies import allow_management
 from src.models.ingredient import Ingredient
 from src.models.order import Order, OrderItem, OrderStatus
 from src.models.pizza import Pizza
-from src.schemas.order import OrderCreate, OrderResponse
+from src.models.user import User
+from src.schemas.order import OrderCreate, OrderResponse, OrderStatusUpdate
 
 router = APIRouter(prefix="/api/orders", tags=["Заказы"])
 
@@ -115,3 +117,51 @@ async def get_orders_history(db: AsyncSession = Depends(get_db)):
     orders = result.scalars().all()
 
     return orders
+
+
+@router.patch(
+    "/{order_id}/status",
+    response_model=OrderResponse,
+    summary="Обновить статус заказа (Доступно: ADMIN, MANAGER)",
+    description="Доступно только для персонала.",
+)
+async def update_order_status(
+    order_id: int,
+    status_data: OrderStatusUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(allow_management),
+):
+    """Доступ к изменению статуса заказа менеджером или админом."""
+    # 1. Делаем запрос к БД на получение заказа по ID
+    query = (
+        select(Order)
+        .where(Order.id == order_id)
+        .options(selectinload(Order.items))
+        .with_for_update()
+    )
+    result = await db.execute(query)
+    order = result.scalar_one_or_none()
+
+    # 2. Если заказ не найден
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Заказ №{order_id} не найден в системе",
+        )
+
+    # 3. Запускаем валидацию переходов состояний из схемы
+    try:
+        status_data.validate_transition(current_status=order.status)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
+        ) from None
+
+    # 4. Обновляем статус и фиксируем изменения в БД
+    order.status = status_data.status
+
+    await db.commit()
+    await db.refresh(order)
+
+    return order

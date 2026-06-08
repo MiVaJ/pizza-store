@@ -116,3 +116,34 @@ class OrderResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class OrderStatusUpdate(BaseModel):
+    """Схема для валидации изменения статуса заказа менеджером или админом."""
+
+    status: OrderStatus = Field(..., description="Новый статус заказа")
+
+    def validate_transition(self, current_status: OrderStatus) -> None:
+        """Валидация разрешенных переходов между статусами."""
+        # Если статус не меняется - это валидно
+        if current_status == self.status:
+            return
+
+        # Разрешённые переходы
+        allowed_transitions = {
+            OrderStatus.PENDING: [OrderStatus.COOKING, OrderStatus.CANCELLED],
+            OrderStatus.COOKING: [OrderStatus.DELIVERING, OrderStatus.CANCELLED],
+            OrderStatus.DELIVERING: [OrderStatus.COMPLETED, OrderStatus.CANCELLED],
+            # Финальные статусы менять нельзя
+            OrderStatus.COMPLETED: [],
+            OrderStatus.CANCELLED: [],
+        }
+
+        valid_next_statuses = allowed_transitions.get(current_status, [])
+
+        if self.status not in valid_next_statuses:
+            allowed_names = [s.value for s in valid_next_statuses]
+            raise ValueError(
+                f"Невозможно перевести заказ из '{current_status.value}' "
+                f"в '{self.status.value}'. Допустимы: {allowed_names or 'нет'}"
+            )
