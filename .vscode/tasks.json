@@ -12,7 +12,7 @@
     {
       "label": "Backend",
       "type": "shell",
-      "command": ".venv\\Scripts\\python -m uvicorn src.main:app --reload",
+      "command": ".venv\\Scripts\\poetry.exe run uvicorn src.main:app --reload",
       "options": {
         "cwd": "${workspaceFolder:backend}"
       },
