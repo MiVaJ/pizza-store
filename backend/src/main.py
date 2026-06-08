@@ -1,7 +1,11 @@
+from contextlib import asynccontextmanager
+
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.core.database import async_session
+from src.core.init_db import create_initial_admin
 from src.routers.auth import router as auth_router
 from src.routers.menu import router as menu_router
 from src.routers.order import router as order_router
@@ -12,7 +16,19 @@ sentry_sdk.init(
     traces_sample_rate=1.0,
 )
 
-app = FastAPI(title="🍕 Pizza Store API (Educational)")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Код выполняется строго при старте приложения
+    async with async_session() as db:
+        await create_initial_admin(db)
+    yield
+
+
+app = FastAPI(
+    title="🍕 Pizza Store API (Educational)",
+    lifespan=lifespan,
+)
 
 app.add_middleware(
     CORSMiddleware,
