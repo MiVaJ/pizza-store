@@ -6,9 +6,15 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
-from src.core.security import create_access_token, hash_password, verify_password
+from src.core.security import (
+    create_access_token,
+    get_session_lifetime,
+    hash_password,
+    set_auth_cookies,
+    verify_password,
+)
 from src.models.session import UserSession
-from src.models.user import User, UserRole
+from src.models.user import User
 from src.schemas.user import TokenResponse, UserCreate, UserLogin, UserResponse
 
 router = APIRouter(prefix="/api/auth", tags=["Авторизация"])
@@ -56,7 +62,16 @@ async def register_user(
     return new_user
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post(
+    "/login",
+    response_model=TokenResponse,
+    summary="Вход в систему (Выдача кук)",
+    description=(
+        "Аутентификация пользователя по JSON-данным. "
+        "Генерирует короткий Access-токен и создает в базе данных "
+        "Refresh-сессию с динамическим временем жизни на основе роли."
+    ),
+)
 async def login_user(
     login_data: UserLogin, response: Response, db: AsyncSession = Depends(get_db)
 ) -> dict:
@@ -76,47 +91,23 @@ async def login_user(
             detail="Неверная электронная почта или пароль",
         )
 
-    # 3. Динамически рассчитываем время жизни сессии
-    if user.role in [UserRole.ADMIN, UserRole.MANAGER, UserRole.COURIER]:
-        # Сессия для персонала на рабочую смену (12 часов)
-        session_time = 3600 * 12
-    else:
-        # Сессия для клиентов на месяц
-        session_time = 3600 * 24 * 30
-
-    # 4. Создаём короткий Access-токен и запекаем для него куку
+    # 3. Создаём короткий Access-токен
     token_data = {"sub": str(user.id)}
     access_token = create_access_token(data=token_data)
 
-    response.set_cookie(
-        key="fastapi_access",
-        value=access_token,
-        httponly=True,
-        secure=False,  # Не забыть выставить True на продакшне для HTTPS
-        samesite="lax",
-        max_age=15 * 60,
-    )
-
-    # 5. Рассчитываем точную дату окончания жизни куки
+    # 4. Генерируем и сохраняем Refresh-сессию в БД
+    session_time = get_session_lifetime(user.role)
     expires_at_date = datetime.now(timezone.utc) + timedelta(seconds=session_time)
-
-    # 6. Создаём долгоживущую Refresh-сессию
     refresh_token_value = str(uuid.uuid4())
+
     new_session = UserSession(
         user_id=user.id, refresh_token=refresh_token_value, expires_at=expires_at_date
     )
     db.add(new_session)
     await db.commit()
 
-    # 7. Формируем долгоживуюущую куку
-    response.set_cookie(
-        key="fastapi_token",
-        value=refresh_token_value,
-        httponly=True,
-        secure=False,  # Не забыть выставитьTrue на продакшне для HTTPS
-        samesite="lax",
-        max_age=session_time,
-    )
+    # 5. Устанавливаем все куки
+    set_auth_cookies(response, user.id, user.role, access_token, refresh_token_value)
     return {"detail": "Успешный вход в систему"}
 
 
@@ -174,29 +165,15 @@ async def refresh_tokens(
     # 4. Удаляем старую сессию
     await db.delete(session)
 
-    # 5. Генерируем новый короткий Access-токен
+    # 5. Генерируем новые токены и сессию
     token_data = {"sub": str(user.id)}
     new_access_token = create_access_token(data=token_data)
-
-    response.set_cookie(
-        key="fastapi_access",
-        value=new_access_token,
-        httponly=True,
-        secure=False,
-        samesite="lax",
-        max_age=15 * 60,
-    )
-
-    # 6. Рассчитываем время для новой сессии
-    if user.role in [UserRole.ADMIN, UserRole.MANAGER, UserRole.COURIER]:
-        session_seconds = 3600 * 12
-    else:
-        session_seconds = 3600 * 24 * 30
-
-    new_expires_at = datetime.now(timezone.utc) + timedelta(seconds=session_seconds)
     new_refresh_token_value = str(uuid.uuid4())
 
-    # 7. Записываем новую сессию в БД
+    session_time = get_session_lifetime(user.role)
+    new_expires_at = datetime.now(timezone.utc) + timedelta(seconds=session_time)
+
+    # 6. Записываем новую сессию в БД
     new_session = UserSession(
         user_id=user.id,
         refresh_token=new_refresh_token_value,
@@ -205,14 +182,9 @@ async def refresh_tokens(
     db.add(new_session)
     await db.commit()
 
-    # 8. Запекаем новый рефреш в куку
-    response.set_cookie(
-        key="fastapi_refresh",
-        value=new_refresh_token_value,
-        httponly=True,
-        secure=False,
-        samesite="lax",
-        max_age=session_seconds,
+    # 7. Устанавливаем все куки
+    set_auth_cookies(
+        response, user.id, user.role, new_access_token, new_refresh_token_value
     )
 
     return {"detail": "Токены успешно обновлены"}
