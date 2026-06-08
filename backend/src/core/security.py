@@ -28,13 +28,17 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(password_bytes, hashed_bytes)
 
 
-def create_access_token(data: dict) -> str:
-    """Создает временный JWT-токен для пользователя."""
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+    """Создает временный JWT-токен для пользователя с динамическим временем жизни."""
     to_encode = data.copy()
 
-    # Рассчитываем время окончания жизни токена
-    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-
+    # Выбираем время жизни токена
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(
+            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+        )
     # Добавляем время истечения в данные токена
     to_encode.update({"exp": expire})
 

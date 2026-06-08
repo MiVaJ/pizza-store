@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from datetime import timedelta
+
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
 from src.core.security import create_access_token, hash_password, verify_password
-from src.models.user import User
+from src.models.user import User, UserRole
 from src.schemas.user import TokenResponse, UserCreate, UserLogin, UserResponse
 
 router = APIRouter(prefix="/api/auth", tags=["Авторизация"])
@@ -53,10 +55,12 @@ async def register_user(
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login_user(login_data: UserLogin, db: AsyncSession = Depends(get_db)) -> dict:
+async def login_user(
+    login_data: UserLogin, response: Response, db: AsyncSession = Depends(get_db)
+) -> dict:
     """Вход в систему.
 
-    Проверяет пароль и выдает JWT-токен.
+    Проверяет пароль, выдает JWT-токен и запекает его в куку.
     """
     # 1. Ищем пользователя в базе данных по почте
     query = select(User).where(User.email == login_data.email)
@@ -70,10 +74,29 @@ async def login_user(login_data: UserLogin, db: AsyncSession = Depends(get_db)) 
             detail="Неверная электронная почта или пароль",
         )
 
-    # 3. Зашиваем в токен базовые данные пользователя
-    token_data = {"sub": str(user.id), "role": user.role}
+    # 3. Динамически рассчитываем время жизни сессии
+    if user.role in [UserRole.ADMIN, UserRole.MANAGER, UserRole.COURIER]:
+        # Сессия для персонала на рабочую смену (12 часов)
+        session_time = 3600 * 12
+    else:
+        # Сессия для клиентов на месяц
+        session_time = 3600 * 24 * 30
 
-    # 4. Генерируем токен
-    token = create_access_token(data=token_data)
+    # 4. Зашиваем в токен только ID пользователя
+    token_data = {"sub": str(user.id)}
 
+    # 5. Генерируем токен
+    token = create_access_token(
+        data=token_data, expires_delta=timedelta(seconds=session_time)
+    )
+
+    # 6. Формируем куку
+    response.set_cookie(
+        key="fastapi_token",
+        value=token,
+        httponly=True,
+        secure=False,  # Не забыть выставитьTrue на продакшне для HTTPS
+        samesite="lax",
+        max_age=session_time,
+    )
     return {"access_token": token, "token_type": "bearer"}
