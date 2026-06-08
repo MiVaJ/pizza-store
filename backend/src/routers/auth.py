@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
@@ -15,7 +15,7 @@ from src.core.security import (
 )
 from src.models.session import UserSession
 from src.models.user import User
-from src.schemas.user import TokenResponse, UserCreate, UserLogin, UserResponse
+from src.schemas.user import UserCreate, UserLogin, UserResponse
 
 router = APIRouter(prefix="/api/auth", tags=["Авторизация"])
 
@@ -64,7 +64,7 @@ async def register_user(
 
 @router.post(
     "/login",
-    response_model=TokenResponse,
+    response_model=None,
     summary="Вход в систему (Выдача кук)",
     description=(
         "Аутентификация пользователя по JSON-данным. "
@@ -91,6 +91,8 @@ async def login_user(
             detail="Неверная электронная почта или пароль",
         )
 
+    await db.execute(delete(UserSession).where(UserSession.user_id == user.id))
+
     # 3. Создаём короткий Access-токен
     token_data = {"sub": str(user.id)}
     access_token = create_access_token(data=token_data)
@@ -107,7 +109,13 @@ async def login_user(
     await db.commit()
 
     # 5. Устанавливаем все куки
-    set_auth_cookies(response, user.id, user.role, access_token, refresh_token_value)
+    set_auth_cookies(
+        response=response,
+        user_id=user.id,
+        role=user.role,
+        access_token=access_token,
+        refresh_token=refresh_token_value,
+    )
     return {"detail": "Успешный вход в систему"}
 
 
@@ -184,7 +192,11 @@ async def refresh_tokens(
 
     # 7. Устанавливаем все куки
     set_auth_cookies(
-        response, user.id, user.role, new_access_token, new_refresh_token_value
+        response=response,
+        user_id=user.id,
+        role=user.role,
+        access_token=new_access_token,
+        refresh_token=new_refresh_token_value,
     )
 
     return {"detail": "Токены успешно обновлены"}
