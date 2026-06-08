@@ -1,19 +1,44 @@
 import React from 'react';
-import { NoticeBanner, Header, MenuSection } from '@/components';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+import { NoticeBanner, Header, MenuSection, Login } from '@/components';
 
-export default function App() {
+// Общая структура сайта
+function Layout() {
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      {/* 1. Плашка-предупреждение на самом верху */}
+    <div className="min-h-screen bg-gray-50/50 flex flex-col">
+      {/* Плашка-предупреждение на самом верху */}
       <NoticeBanner />
 
-      {/* 2. Шапка сайта с корзиной */}
+      {/* Шапка сайта с корзиной */}
       <Header />
 
-      {/* 3. Секция меню */}
+      {/* Местодля подключения нужной страницы */}
       <main>
-        <MenuSection />
+        <Outlet />
       </main>
     </div>
   );
+}
+
+// Конфигурация маршрутов
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Layout />, // Главный каркас сайта
+    children: [
+      {
+        path: '/',
+        element: <MenuSection />, // Главная страница: секция меню пицц
+      },
+      {
+        path: '/login',
+        element: <Login />, // Страница авторизации
+      },
+    ],
+  },
+]);
+
+// Функция запуска сайта
+export default function App() {
+  return <RouterProvider router={router} />;
 }
