@@ -20,7 +20,7 @@ async def get_current_user(
     )
 
     # Достаём токен из кук браузера
-    token = request.cookies.get("fastapi_token")
+    token = request.cookies.get("fastapi_access")
     if not token:
         raise credentials_exception
 
