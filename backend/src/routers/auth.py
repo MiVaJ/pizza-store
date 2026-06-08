@@ -1,4 +1,5 @@
-from datetime import timedelta
+import uuid
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
@@ -6,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
 from src.core.security import create_access_token, hash_password, verify_password
+from src.models.session import UserSession
 from src.models.user import User, UserRole
 from src.schemas.user import TokenResponse, UserCreate, UserLogin, UserResponse
 
@@ -82,21 +84,37 @@ async def login_user(
         # Сессия для клиентов на месяц
         session_time = 3600 * 24 * 30
 
-    # 4. Зашиваем в токен только ID пользователя
+    # 4. Создаём короткий Access-токен и запекаем для него куку
     token_data = {"sub": str(user.id)}
+    access_token = create_access_token(data=token_data)
 
-    # 5. Генерируем токен
-    token = create_access_token(
-        data=token_data, expires_delta=timedelta(seconds=session_time)
+    response.set_cookie(
+        key="fastapi_access",
+        value=access_token,
+        httponly=True,
+        secure=False,  # Не забыть выставить True на продакшне для HTTPS
+        samesite="lax",
+        max_age=15 * 60,
     )
 
-    # 6. Формируем куку
+    # 5. Рассчитываем точную дату окончания жизни куки
+    expires_at_date = datetime.now(timezone.utc) + timedelta(seconds=session_time)
+
+    # 6. Создаём долгоживущую Refresh-сессию
+    refresh_token_value = str(uuid.uuid4())
+    new_session = UserSession(
+        user_id=user.id, refresh_token=refresh_token_value, expires_at=expires_at_date
+    )
+    db.add(new_session)
+    await db.commit()
+
+    # 7. Формируем долгоживуюущую куку
     response.set_cookie(
         key="fastapi_token",
-        value=token,
+        value=refresh_token_value,
         httponly=True,
         secure=False,  # Не забыть выставитьTrue на продакшне для HTTPS
         samesite="lax",
         max_age=session_time,
     )
-    return {"access_token": token, "token_type": "bearer"}
+    return {"detail": "Успешный вход в систему"}
