@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -118,3 +118,101 @@ async def login_user(
         max_age=session_time,
     )
     return {"detail": "Успешный вход в систему"}
+
+
+@router.post(
+    "/refresh",
+    summary="Обновить токены сессии",
+    description="Бесшумно обновляет Access и Refresh куки",
+)
+async def refresh_tokens(
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Обновление сессии (Refresh).
+
+    Читает рефреш-куку, проверяет БД, удаляет старую сессию
+    и выдает новую пару кук (Access + Refresh).
+    """
+    # 1. Извлекаем старый рефреш-токен из кук
+    old_refresh_token = request.cookies.get("fastapi_refresh")
+    if not old_refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Отсутствует токен обновления",
+        )
+
+    # 2. Ищем сессию в БД вместе с пользователем
+    from sqlalchemy.orm import selectinload
+
+    query = (
+        select(UserSession)
+        .where(UserSession.refresh_token == old_refresh_token)
+        .options(selectinload(UserSession.user))
+    )
+    result = await db.execute(query)
+    session = result.scalar_one_or_none()
+
+    # 3. Если сессии нет или она просрочена, то разлогиниваем пользователя
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Невалидный токен обновления",
+        )
+
+    if session.expires_at < datetime.now(timezone.utc):
+        await db.delete(session)
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Срок действия сессии истек",
+        )
+
+    user = session.user
+
+    # 4. Удаляем старую сессию
+    await db.delete(session)
+
+    # 5. Генерируем новый короткий Access-токен
+    token_data = {"sub": str(user.id)}
+    new_access_token = create_access_token(data=token_data)
+
+    response.set_cookie(
+        key="fastapi_access",
+        value=new_access_token,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=15 * 60,
+    )
+
+    # 6. Рассчитываем время для новой сессии
+    if user.role in [UserRole.ADMIN, UserRole.MANAGER, UserRole.COURIER]:
+        session_seconds = 3600 * 12
+    else:
+        session_seconds = 3600 * 24 * 30
+
+    new_expires_at = datetime.now(timezone.utc) + timedelta(seconds=session_seconds)
+    new_refresh_token_value = str(uuid.uuid4())
+
+    # 7. Записываем новую сессию в БД
+    new_session = UserSession(
+        user_id=user.id,
+        refresh_token=new_refresh_token_value,
+        expires_at=new_expires_at,
+    )
+    db.add(new_session)
+    await db.commit()
+
+    # 8. Запекаем новый рефреш в куку
+    response.set_cookie(
+        key="fastapi_refresh",
+        value=new_refresh_token_value,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=session_seconds,
+    )
+
+    return {"detail": "Токены успешно обновлены"}
