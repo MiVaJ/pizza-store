@@ -67,6 +67,7 @@ export default function CartSheet({ children }) {
   const addItem = useCartStore((state) => state.addItem);
   const removeItem = useCartStore((state) => state.removeItem);
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
 
   // Создаём ссылку на блок соусов, чтобы управлять его прокруткой
   const sauceScrollRef = useRef(null);
@@ -93,7 +94,7 @@ export default function CartSheet({ children }) {
   ).map((id) => rawSauces.find((sauce) => sauce.id === id));
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       {/* Открывает шторку при клике на кнопку (вешается onClick) */}
       <SheetTrigger asChild>{children}</SheetTrigger>
 
@@ -231,7 +232,10 @@ export default function CartSheet({ children }) {
               </div>
 
               <button
-                onClick={() => navigate('/checkout')}
+                onClick={() => {
+                  setOpen(false);
+                  navigate('/checkout');
+                }}
                 className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white font-bold
                   text-sm rounded-xl shadow-sm transition-colors active:scale-[0.99] duration-150
                   cursor-pointer"

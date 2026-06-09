@@ -63,6 +63,7 @@ export const useCartStore = create(
         const item = get().items.find((item) => item.id === pizzaId);
         return item ? item.quantity : 0;
       },
+      clearCart: () => set({ items: [], totalQuantity: 0, totalPrice: 0 }),
     }),
     {
       // Уникальное имя ключа в localStorage браузера

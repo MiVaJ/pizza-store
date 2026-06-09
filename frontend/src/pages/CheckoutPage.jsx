@@ -16,19 +16,21 @@ export default function CheckoutPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   // Если корзина пустая - редиректим на главную
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !orderPlaced) {
       navigate('/');
     }
-  }, [items.length]);
+  }, [items.length, orderPlaced]);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async () => {
+    setOrderPlaced(true);
     setError(null);
     setLoading(true);
 
@@ -62,9 +64,15 @@ export default function CheckoutPage() {
       clearCart();
       navigate('/profile');
     } catch (err) {
+      console.log('err:', err);
+      console.log('err.response:', err.response);
+      console.log('detail:', err.response?.data?.detail);
       const detail = err.response?.data?.detail;
       if (Array.isArray(detail)) {
-        setError(detail.map((d) => d.msg).join(', '));
+        const messages = detail.map((d) => d.msg.replace(/^value error,\s*/i, ''));
+        setError(messages.join(', '));
+      } else if (typeof detail === 'string') {
+        setError(detail);
       } else {
         setError(detail ?? 'Не удалось оформить заказ. Попробуйте ещё раз.');
       }

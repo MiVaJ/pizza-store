@@ -18,8 +18,18 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    const isAuthEndpoint =
+      originalRequest.url.includes('/auth/refresh') ||
+      originalRequest.url.includes('/auth/login') ||
+      originalRequest.url.includes('/auth/me');
+
     // Если кука доступа умерла и мы еще не пытались её обновить
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthEndpoint &&
+      !originalRequest._skipRefresh
+    ) {
       originalRequest._retry = true;
 
       if (!isRefreshing) {

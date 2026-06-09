@@ -24,7 +24,7 @@ export const useAuthStore = create((set) => ({
   // Автоматическая проверка сессии при перезагрузке страницы
   checkAuth: async () => {
     try {
-      const response = await api.get('/api/auth/me');
+      const response = await api.get('/api/auth/me', { _skipRefresh: true });
       set({ user: response.data, isAuth: true });
     } catch (error) {
       // Если даже после интерцептора запрос упал — сессия полностью мертва
