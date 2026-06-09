@@ -156,7 +156,7 @@ class OrderStats(BaseModel):
     total_orders: int = Field(..., description="Количество заказов")
 
     # Сумма всех чеков в рублях
-    total_spent: int = Field(..., description="Общая сумма потраченных средств")
+    total_spent: RublesInt  = Field(..., description="Общая сумма потраченных средств")
 
     # Самая часто заказываемая пицца. None если заказов ещё не было
     favourite_pizza: str | None = Field(
