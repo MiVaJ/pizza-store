@@ -43,6 +43,29 @@ async def get_current_user(
     return user
 
 
+async def get_optional_user(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> User | None:
+    """Возвращает пользователя, если авторизован, None если гость."""
+    token = request.cookies.get("fastapi_access")
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id_str: str = payload.get("sub")
+        if user_id_str is None:
+            return None
+        user_id = int(user_id_str)
+    except (jwt.PyJWTError, ValueError):
+        return None
+    # Ищем пользователя в БД по ID
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    return user
+
+
 class RoleChecker:
     """Класс-фабрика для проверки ролей."""
 
