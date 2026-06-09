@@ -1,90 +1,94 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
 
-export default function Login() {
+export default function LoginPage() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const login = useAuthStore((state) => state.login);
-  const isAuth = useAuthStore((state) => state.isAuth);
-  const user = useAuthStore((state) => state.user);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
       await login({ email, password });
+      navigate('/');
     } catch (err) {
       setError(err.response?.data?.detail || 'Неверная почта или пароль');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Экран успешного входа
-  if (isAuth && user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] p-6 text-center">
-        <div className="w-full max-w-md p-6 bg-background border border-border rounded-xl shadow-sm">
-          <h2 className="text-2xl font-bold text-foreground mb-2">
-            Вы успешно вошли, {user.name}!
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Ваша роль в системе: <span className="font-semibold text-primary">{user.role}</span>
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Экран формы авторизации
   return (
     <div className="flex items-center justify-center min-h-[70vh] px-4">
-      <div className="w-full max-w-md p-6 bg-background border border-border rounded-xl shadow-sm">
-        <h2 className="text-2xl text-orange-500 font-bold text-center text-foreground mb-6">
-          Вход в ПиццаТут
-        </h2>
+      <div className="w-full max-w-md p-6 bg-white border border-gray-100 rounded-2xl">
+        <div className="text-center mb-6">
+          <span className="text-4xl">🍕</span>
+          <h1 className="text-2xl font-black text-gray-800 mt-2">Вход в ПиццаТут</h1>
+          <p className="text-sm text-gray-400 mt-1">Введите email и пароль</p>
+        </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-muted-foreground">Email</label>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              Email
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full h-9 px-3 text-sm bg-background border border-input rounded-lg
-                outline-none focus-visible:border-ring focus-visible:ring-2
-                focus-visible:ring-ring/20 transition-all"
               placeholder="example@pizza.ru"
+              className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-800
+                placeholder:text-gray-300 focus:outline-none focus:border-orange-400
+                transition-colors"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-muted-foreground">Пароль</label>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              Пароль
+            </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full h-9 px-3 text-sm bg-background border border-input rounded-lg
-                outline-none focus-visible:border-ring focus-visible:ring-2
-                focus-visible:ring-ring/20 transition-all"
+              className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-800
+                placeholder:text-gray-300 focus:outline-none focus:border-orange-400
+                transition-colors"
               placeholder="••••••••"
             />
           </div>
 
-          {error && <p className="text-sm font-medium text-destructive mt-1">{error}</p>}
+          {error && <p className="text-sm text-red-500 bg-red-50 rounded-xl px-4 py-3">{error}</p>}
 
-          <Button
+          <button
             type="submit"
-            variant="default"
-            size="lg"
-            className="w-full mt-2 bg-orange-500 px-4 font-bold text-white shadow-sm transition-all
-              duration-300 hover:bg-orange-600 text-sm cursor-pointer select-none"
+            disabled={loading}
+            className="w-full h-11 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300
+              text-white font-bold text-sm rounded-xl transition-colors active:scale-[0.99]
+              cursor-pointer select-none mt-1"
           >
-            Войти в аккаунт
-          </Button>
+            {loading ? 'Входим...' : 'Войти в аккаунт'}
+          </button>
+
+          <p className="text-center text-sm text-gray-400">
+            Нет аккаунта?{' '}
+            <button
+              type="button"
+              onClick={() => navigate('/register')}
+              className="text-orange-500 font-semibold hover:underline cursor-pointer"
+            >
+              Зарегистрироваться
+            </button>
+          </p>
         </form>
       </div>
     </div>
