@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.core.database import get_db
-from src.core.dependencies import allow_management
+from src.core.dependencies import allow_management, get_optional_user
 from src.models.ingredient import Ingredient
 from src.models.order import Order, OrderItem, OrderStatus
 from src.models.pizza import Pizza
@@ -15,7 +15,11 @@ router = APIRouter(prefix="/api/orders", tags=["Заказы"])
 
 
 @router.post("/", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
-async def create_order(order_data: OrderCreate, db: AsyncSession = Depends(get_db)):
+async def create_order(
+    order_data: OrderCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User | None = Depends(get_optional_user),
+):
     """Оформление нового заказа."""
 
     # 1. Извлекаем все ID пицц и ингредиентов
@@ -81,7 +85,7 @@ async def create_order(order_data: OrderCreate, db: AsyncSession = Depends(get_d
 
     # 4. Создаем объект заказа
     new_order = Order(
-        user_id=None,
+        user_id=current_user.id if current_user else None,
         customer_name=order_data.customer_name,
         phone=order_data.phone,
         delivery_address=order_data.delivery_address,
