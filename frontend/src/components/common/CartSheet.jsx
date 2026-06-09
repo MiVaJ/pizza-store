@@ -9,6 +9,7 @@ import {
   SheetDescription,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { useNavigate } from 'react-router-dom';
 
 function SauceCard({ sauce, onAdd }) {
   // Флаг: сломалась Картинка или нет.
@@ -65,6 +66,7 @@ export default function CartSheet({ children }) {
   const totalPrice = useCartStore((state) => state.totalPrice);
   const addItem = useCartStore((state) => state.addItem);
   const removeItem = useCartStore((state) => state.removeItem);
+  const navigate = useNavigate();
 
   // Создаём ссылку на блок соусов, чтобы управлять его прокруткой
   const sauceScrollRef = useRef(null);
@@ -229,6 +231,7 @@ export default function CartSheet({ children }) {
               </div>
 
               <button
+                onClick={() => navigate('/checkout')}
                 className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white font-bold
                   text-sm rounded-xl shadow-sm transition-colors active:scale-[0.99] duration-150
                   cursor-pointer"

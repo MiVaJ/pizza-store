@@ -4,6 +4,7 @@ import { NoticeBanner, Header } from '@/components';
 import MenuPage from '@/pages/MenuPage';
 import LoginPage from '@/pages/LoginPage';
 import ProfilePage from '@/pages/ProfilePage';
+import CheckoutPage from '@/pages/CheckoutPage';
 
 // Общая структура сайта
 function Layout() {
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
       {
         path: '/profile',
         element: <ProfilePage />, //Страница профиля
+      },
+      {
+        path: '/checkout',
+        element: <CheckoutPage />, // Страница оформления заказа
       },
     ],
   },
