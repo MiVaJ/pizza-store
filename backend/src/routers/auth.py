@@ -16,7 +16,7 @@ from src.core.security import (
 )
 from src.models.session import UserSession
 from src.models.user import User
-from src.schemas.user import UserCreate, UserLogin, UserResponse
+from src.schemas.user import UserCreate, UserLogin, UserResponse, UserUpdate
 
 router = APIRouter(prefix="/api/auth", tags=["Авторизация"])
 
@@ -217,4 +217,51 @@ async def get_me(
     current_user: User = Depends(get_current_user),
 ) -> User:
     """Возвращает профиль текущего авторизованного пользователя."""
+    return current_user
+
+
+@router.patch(
+    "/me",
+    response_model=UserResponse,
+    summary="Обновление профиля",
+    description=(
+        "Обновляет имя и номер телефона авторизованного пользователя. "
+        "Все поля опциональны — передавай только то, что нужно изменить. "
+        "Проверяет уникальность нового номера телефона среди других пользователей."
+    ),
+)
+async def update_me(
+    user_data: UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """
+    Частичное обновление профиля (PATCH).
+
+    Обновляет только переданные поля, остальные остаются без изменений.
+    Перед сохранением телефона проверяет его уникальность в базе.
+    """
+    # 1. Если передан телефон, то проверяем, не занят ли он другим пользователем
+    if user_data.phone is not None:
+        existing = await db.execute(
+            select(User).where(
+                User.phone == user_data.phone,
+                User.id != current_user.id,
+            )
+        )
+        if existing.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Этот номер телефона уже используется другим пользователем",
+            )
+
+    # 2. Обновляем только переданные поля
+    if user_data.name is not None:
+        current_user.name = user_data.name
+    if user_data.phone is not None:
+        current_user.phone = user_data.phone
+
+    # 3. Фиксируем изменения и возвращаем обновлённый объект
+    await db.commit()
+    await db.refresh(current_user)
     return current_user

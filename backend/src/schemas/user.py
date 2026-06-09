@@ -53,3 +53,23 @@ class TokenResponse(BaseModel):
 
     access_token: str = Field(..., description="Цифровой пропуск (JWT токен)")
     token_type: str = Field("bearer", description="Тип токена")
+
+
+class UserUpdate(BaseModel):
+    """Схема для частичного обновления профиля пользователя (PATCH).
+
+    Все поля опциональны. Обновляются только те, что переданы в запросе.
+    """
+
+    name: str | None = Field(None, max_length=100, description="Новое имя пользователя")
+    phone: str | None = Field(None, description="Новый номер телефона")
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: str | None) -> str | None:
+        """Проверяет, что номер содержит не менее 10 цифр."""
+        if v is not None:
+            clean_phone = "".join(c for c in v if c.isdigit())
+            if len(clean_phone) < 10:
+                raise ValueError("Номер телефона должен содержать минимум 10 цифр")
+        return v
