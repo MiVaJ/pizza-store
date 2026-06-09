@@ -265,3 +265,28 @@ async def update_me(
     await db.commit()
     await db.refresh(current_user)
     return current_user
+
+
+@router.post(
+    "/logout",
+    summary="Выход из системы",
+    description="Удаляет Access и Refresh куки и инвалидирует сессию в базе данных.",
+)
+async def logout(
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Выход из системы. Удаляет сессию из БД и очищает куки."""
+    refresh_token = request.cookies.get("fastapi_refresh")
+
+    if refresh_token:
+        await db.execute(
+            delete(UserSession).where(UserSession.refresh_token == refresh_token)
+        )
+        await db.commit()
+
+    response.delete_cookie("fastapi_access")
+    response.delete_cookie("fastapi_refresh")
+
+    return {"detail": "Вы успешно вышли из системы"}

@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
 import api from '@/core/api';
 
 export default function ProfilePage() {
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -58,9 +63,21 @@ export default function ProfilePage() {
             {user?.phone && <p className="text-sm text-gray-400">{user.phone}</p>}
           </div>
         </div>
-        <span className="text-xs font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-500">
-          {user?.role}
-        </span>
+
+        {/* Правый блок: Роль, Выход */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-500">
+            {user?.role}
+          </span>
+          <button
+            onClick={handleLogout}
+            className="text-xs font-medium px-3 py-1 rounded-full border border-red-200 text-red-400
+              hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors
+              cursor-pointer"
+          >
+            Выйти
+          </button>
+        </div>
       </div>
 
       {/* Метрики */}

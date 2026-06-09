@@ -17,6 +17,11 @@ export const useAuthStore = create((set) => ({
 
   // Функция выхода из системы
   logout: async () => {
+    try {
+      await api.post('/api/auth/logout');
+    } catch {
+      // сбрасываем сессию в любом случае
+    }
     set({ user: null, isAuth: false });
     window.location.href = '/login';
   },
