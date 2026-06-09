@@ -6,6 +6,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
+from src.core.dependencies import get_current_user
 from src.core.security import (
     create_access_token,
     get_session_lifetime,
@@ -200,3 +201,20 @@ async def refresh_tokens(
     )
 
     return {"detail": "Токены успешно обновлены"}
+
+
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    summary="Профиль текущего пользователя",
+    description=(
+        "Возвращает данные авторизованного пользователя по Access-куке. "
+        "Используется для отображения страницы профиля и инициализации "
+        "состояния пользователя на фронтенде."
+    ),
+)
+async def get_me(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Возвращает профиль текущего авторизованного пользователя."""
+    return current_user
