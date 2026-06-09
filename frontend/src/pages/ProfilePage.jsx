@@ -8,9 +8,49 @@ export default function ProfilePage() {
   const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Состояние формы редактирования
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', phone: '' });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState(null);
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
+  };
+
+  const handleEditOpen = () => {
+    setEditForm({ name: user?.name ?? '', phone: user?.phone ?? '' });
+    setEditError(null);
+    setIsEditing(true);
+  };
+
+  const handleEditChange = (e) => {
+    setEditForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleEditSubmit = async () => {
+    setEditLoading(true);
+    setEditError(null);
+    try {
+      const response = await api.patch('/api/auth/me', {
+        name: editForm.name || null,
+        phone: editForm.phone || null,
+      });
+      // Обновляем страницу с новыми данными
+      useAuthStore.setState({ user: response.data });
+      setIsEditing(false);
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      if (Array.isArray(detail)) {
+        setEditError(detail.map((d) => d.msg.replace(/^value error,\s*/i, '')).join(' · '));
+      } else {
+        setEditError(typeof detail === 'string' ? detail : 'Не удалось сохранить изменения');
+      }
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -64,8 +104,16 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Правый блок: Роль, Выход */}
+        {/* Правый блок: Редактирование, Роль, Выход */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleEditOpen}
+            className="text-xs font-medium px-3 py-1 rounded-full border border-gray-200
+              text-gray-500 hover:border-orange-300 hover:text-orange-500 hover:bg-orange-50
+              transition-colors cursor-pointer"
+          >
+            Редактировать
+          </button>
           <span className="text-xs font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-500">
             {user?.role}
           </span>
@@ -79,6 +127,67 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
+
+      {/* Форма редактирования */}
+      {isEditing && (
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+          <h2 className="text-sm font-semibold text-gray-800">Редактировать профиль</h2>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Имя
+              </label>
+              <input
+                name="name"
+                value={editForm.name}
+                onChange={handleEditChange}
+                placeholder="Иван Петров"
+                className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-800
+                  placeholder:text-gray-300 focus:outline-none focus:border-orange-400
+                  transition-colors"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Телефон
+              </label>
+              <input
+                name="phone"
+                value={editForm.phone}
+                onChange={handleEditChange}
+                placeholder="+7 900 000-00-00"
+                className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-800
+                  placeholder:text-gray-300 focus:outline-none focus:border-orange-400
+                  transition-colors"
+              />
+            </div>
+          </div>
+
+          {editError && (
+            <p className="text-sm text-red-500 bg-red-50 rounded-xl px-4 py-3">{editError}</p>
+          )}
+
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={() => setIsEditing(false)}
+              className="h-9 px-4 rounded-xl border border-gray-200 text-sm text-gray-500
+                hover:bg-gray-50 transition-colors cursor-pointer"
+            >
+              Отмена
+            </button>
+            <button
+              onClick={handleEditSubmit}
+              disabled={editLoading}
+              className="h-9 px-4 rounded-xl bg-orange-500 hover:bg-orange-600
+                disabled:bg-orange-300 text-white text-sm font-medium transition-colors
+                cursor-pointer"
+            >
+              {editLoading ? 'Сохраняем...' : 'Сохранить'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Метрики */}
       {stats && (
