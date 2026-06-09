@@ -1,6 +1,8 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
-import { NoticeBanner, Header, MenuSection, Login } from '@/components';
+import { NoticeBanner, Header } from '@/components';
+import MenuPage from '@/pages/MenuPage';
+import LoginPage from '@/pages/LoginPage';
 
 // Общая структура сайта
 function Layout() {
@@ -28,11 +30,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <MenuSection />, // Главная страница: секция меню пицц
+        element: <MenuPage />, // Главная страница: секция меню пицц
       },
       {
         path: '/login',
-        element: <Login />, // Страница авторизации
+        element: <LoginPage />, // Страница авторизации
       },
     ],
   },
