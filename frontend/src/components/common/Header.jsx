@@ -2,16 +2,18 @@ import React from 'react';
 import { useCartStore } from '@/store';
 import { CartSheet } from '@/components';
 import AnimatedNumber from './AnimatedNumber';
+import { useNavigate } from 'react-router-dom';
 
 export default function Header() {
   const totalQuantity = useCartStore((state) => state.totalQuantity);
   const totalPrice = useCartStore((state) => state.totalPrice);
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 p-4 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between">
         {/* Логотип пиццерии */}
-        <div className="flex items-center gap-2">
+        <div onClick={() => navigate('/')} className="flex items-center gap-2 cursor-pointer">
           <span className="text-3xl">🍕</span>
           <span className="text-2xl font-black tracking-tight text-gray-800">
             Пицца<span className="text-orange-500">ТуТ</span>
