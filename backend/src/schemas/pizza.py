@@ -19,7 +19,7 @@ class IngredientResponse(BaseModel):
         ..., description="Флаг: True — соус для корзины, False — топпинг для пиццы"
     )
 
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 
@@ -40,5 +40,5 @@ class PizzaResponse(BaseModel):
         ),
     )
 
-    class Config:
+    class ConfigDict:
         from_attributes = True

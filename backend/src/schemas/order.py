@@ -96,7 +96,7 @@ class OrderItemResponse(BaseModel):
     price_at_purchase: RublesInt = Field(..., description="Стоимость в рублях")
     quantity: int = Field(..., description="Количество")
 
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 
@@ -114,7 +114,7 @@ class OrderResponse(BaseModel):
         default=[], description="Развернутый список купленных товаров"
     )
 
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 
@@ -163,5 +163,5 @@ class OrderStats(BaseModel):
         None, description="Название самой популярной пиццы пользователя"
     )
 
-    class Config:
+    class ConfigDict:
         from_attributes = True

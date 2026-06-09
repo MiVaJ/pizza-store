@@ -43,7 +43,7 @@ class UserResponse(UserBase):
     id: int = Field(..., description="Уникальный идентификатор")
     role: UserRole = Field(..., description="Роль пользователя на сайте")
 
-    class Config:
+    class ConfigDict:
         # Pydantic настройка для чтения данных из ORM-моделей
         from_attributes = True
 
