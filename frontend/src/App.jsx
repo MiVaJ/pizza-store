@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import { NoticeBanner, Header } from '@/components';
 import MenuPage from '@/pages/MenuPage';
 import LoginPage from '@/pages/LoginPage';
+import ProfilePage from '@/pages/ProfilePage';
 
 // Общая структура сайта
 function Layout() {
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       {
         path: '/login',
         element: <LoginPage />, // Страница авторизации
+      },
+      {
+        path: '/profile',
+        element: <ProfilePage />, //Страница профиля
       },
     ],
   },
