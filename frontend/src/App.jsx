@@ -5,6 +5,7 @@ import MenuPage from '@/pages/MenuPage';
 import LoginPage from '@/pages/LoginPage';
 import ProfilePage from '@/pages/ProfilePage';
 import CheckoutPage from '@/pages/CheckoutPage';
+import RegisterPage from '@/pages/RegisterPage';
 
 // Общая структура сайта
 function Layout() {
@@ -45,6 +46,10 @@ const router = createBrowserRouter([
       {
         path: '/checkout',
         element: <CheckoutPage />, // Страница оформления заказа
+      },
+      {
+        path: '/register',
+        element: <RegisterPage />, //Страница регистрации
       },
     ],
   },
