@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.core.database import get_db
-from src.core.dependencies import allow_management, get_optional_user
+from src.core.dependencies import allow_management, get_current_user, get_optional_user
 from src.models.ingredient import Ingredient
 from src.models.order import Order, OrderItem, OrderStatus
 from src.models.pizza import Pizza
 from src.models.user import User
-from src.schemas.order import OrderCreate, OrderResponse, OrderStatusUpdate
+from src.schemas.order import OrderCreate, OrderResponse, OrderStats, OrderStatusUpdate
 
 router = APIRouter(prefix="/api/orders", tags=["Заказы"])
 
@@ -169,3 +169,76 @@ async def update_order_status(
     await db.refresh(order)
 
     return order
+
+
+@router.get(
+    "/my/stats",
+    response_model=OrderStats,
+    summary="Статистика заказов текущего пользователя",
+    description=(
+        "Возвращает агрегированные данные по заказам авторизованного пользователя: "
+        "общее количество, суммарные расходы и самую часто заказываемую пиццу. "
+        "Отменённые заказы в статистику не включаются."
+    ),
+)
+async def get_my_stats(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> OrderStats:
+    """Статистика: кол-во, сумма, любимая пицца."""
+
+    # Кол-во заказов и общая сумма
+    stats_query = select(
+        func.count(Order.id).label("total_orders"),
+        func.coalesce(func.sum(Order.total_price), 0).label("total_spent"),
+    ).where(
+        Order.user_id == current_user.id,
+        Order.status != OrderStatus.CANCELLED,
+    )
+    stats_result = await db.execute(stats_query)
+    row = stats_result.one()
+
+    # Любимая пицца - самая часто заказанная позиция
+    fav_query = (
+        select(OrderItem.product_name)
+        .join(Order, Order.id == OrderItem.order_id)
+        .where(
+            Order.user_id == current_user.id,
+            OrderItem.pizza_id.is_not(None),
+        )
+        .group_by(OrderItem.product_name)
+        .order_by(func.sum(OrderItem.quantity).desc())
+        .limit(1)
+    )
+    fav_result = await db.execute(fav_query)
+    favourite = fav_result.scalar_one_or_none()
+
+    return OrderStats(
+        total_orders=row.total_orders,
+        total_spent=row.total_spent,
+        favourite_pizza=favourite,
+    )
+
+
+@router.get(
+    "/my",
+    response_model=list[OrderResponse],
+    summary="История заказов текущего пользователя",
+    description=(
+        "Возвращает все заказы авторизованного пользователя в порядке убывания даты. "
+        "Каждый заказ включает полный список позиций с ценами на момент покупки."
+    ),
+)
+async def get_my_orders(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[Order]:
+    """Возвращает все заказы авторизованного пользователя."""
+    query = (
+        select(Order)
+        .where(Order.user_id == current_user.id)
+        .options(selectinload(Order.items))
+        .order_by(Order.created_at.desc())
+    )
+    result = await db.execute(query)
+    return result.scalars().all()

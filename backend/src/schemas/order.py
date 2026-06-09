@@ -147,3 +147,21 @@ class OrderStatusUpdate(BaseModel):
                 f"Невозможно перевести заказ из '{current_status.value}' "
                 f"в '{self.status.value}'. Допустимы: {allowed_names or 'нет'}"
             )
+
+
+class OrderStats(BaseModel):
+    """Схема для отображения статистики заказов пользователя для страницы профиля."""
+
+    # Общее количество завершённых заказов (без отменённых)
+    total_orders: int = Field(..., description="Количество заказов")
+
+    # Сумма всех чеков в рублях
+    total_spent: int = Field(..., description="Общая сумма потраченных средств")
+
+    # Самая часто заказываемая пицца. None если заказов ещё не было
+    favourite_pizza: str | None = Field(
+        None, description="Название самой популярной пиццы пользователя"
+    )
+
+    class Config:
+        from_attributes = True
