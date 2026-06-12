@@ -11,6 +11,12 @@ const api = axios.create({
 });
 
 let isRefreshing = false;
+let pendingRequests = [];
+
+const onRefreshed = () => {
+  pendingRequests.forEach((callback) => callback());
+  pendingRequests = [];
+};
 
 // Создаём перехватчик ответов (response)
 api.interceptors.response.use(
@@ -19,17 +25,10 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     const isAuthEndpoint =
-      originalRequest.url.includes('/auth/refresh') ||
-      originalRequest.url.includes('/auth/login') ||
-      originalRequest.url.includes('/auth/me');
+      originalRequest.url.includes('/auth/refresh') || originalRequest.url.includes('/auth/login');
 
     // Если кука доступа умерла и мы еще не пытались её обновить
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !isAuthEndpoint &&
-      !originalRequest._skipRefresh
-    ) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
 
       if (!isRefreshing) {
@@ -44,14 +43,23 @@ api.interceptors.response.use(
           );
 
           isRefreshing = false;
+          onRefreshed();
           // Повторяем запрос пользователя с уже обновленной кукой доступа
           return api(originalRequest);
         } catch (refreshError) {
           isRefreshing = false;
+          pendingRequests = [];
           // Если даже после обновления сессия закрыта, то редиректим для повторного логина
           window.location.href = '/login';
           return Promise.reject(refreshError);
         }
+      } else {
+        // Если в процессе обновления токена, то ждём окончания обновления
+        return new Promise((resolve, reject) => {
+          pendingRequests.push(() => {
+            api(originalRequest).then(resolve).catch(reject);
+          });
+        });
       }
     }
 
