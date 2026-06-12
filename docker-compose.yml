@@ -12,6 +12,37 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - pizza_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pizza_user -d pizza_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: pizza_backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pizza_network
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: pizza_frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - pizza_network
+
 
 volumes:
   postgres_data:
