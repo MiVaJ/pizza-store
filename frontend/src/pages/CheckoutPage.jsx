@@ -64,9 +64,6 @@ export default function CheckoutPage() {
       clearCart();
       navigate('/profile');
     } catch (err) {
-      console.log('err:', err);
-      console.log('err.response:', err.response);
-      console.log('detail:', err.response?.data?.detail);
       const detail = err.response?.data?.detail;
       if (Array.isArray(detail)) {
         const messages = detail.map((d) => d.msg.replace(/^value error,\s*/i, ''));
