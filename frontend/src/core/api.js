@@ -25,7 +25,9 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     const isAuthEndpoint =
-      originalRequest.url.includes('/auth/refresh') || originalRequest.url.includes('/auth/login');
+      originalRequest.url.includes('/auth/refresh') ||
+      originalRequest.url.includes('/auth/login') ||
+      originalRequest.url.includes('/auth/logout');
 
     // Если кука доступа умерла и мы еще не пытались её обновить
     if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
@@ -50,7 +52,9 @@ api.interceptors.response.use(
           isRefreshing = false;
           pendingRequests = [];
           // Если даже после обновления сессия закрыта, то редиректим для повторного логина
-          window.location.href = '/login';
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
           return Promise.reject(refreshError);
         }
       } else {
