@@ -11,6 +11,8 @@ export default function Header() {
   const { user, isAuth } = useAuthStore();
   const navigate = useNavigate();
 
+  const isStaff = isAuth && ['manager', 'admin'].includes(user?.role);
+
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 p-4 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between">
@@ -23,6 +25,18 @@ export default function Header() {
         </div>
         {/* Правый блок: Профиль, Корзина */}
         <div className="flex items-center gap-3">
+          {/* Кнопка для менеджера/админа */}
+          {isStaff && (
+            <button
+              onClick={() => navigate('/manager/orders')}
+              className="h-11 px-4 rounded-full border border-gray-200 bg-white text-sm font-medium
+                text-gray-600 hover:border-orange-300 hover:text-orange-500 transition-colors
+                cursor-pointer select-none hidden sm:block"
+            >
+              Заказы
+            </button>
+          )}
+
           {/* Кнопка профиля или входа */}
           {isAuth ? (
             <button
