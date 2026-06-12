@@ -1,11 +1,12 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
-import { NoticeBanner, Header } from '@/components';
+import { NoticeBanner, Header, ProtectedRoute } from '@/components';
 import MenuPage from '@/pages/MenuPage';
 import LoginPage from '@/pages/LoginPage';
 import ProfilePage from '@/pages/ProfilePage';
 import CheckoutPage from '@/pages/CheckoutPage';
 import RegisterPage from '@/pages/RegisterPage';
+import ManagerOrdersPage from '@/pages/ManagerOrdersPage';
 
 // Общая структура сайта
 function Layout() {
@@ -50,6 +51,14 @@ const router = createBrowserRouter([
       {
         path: '/register',
         element: <RegisterPage />, //Страница регистрации
+      },
+      {
+        path: '/manager/orders',
+        element: (
+          <ProtectedRoute allowedRoles={['manager', 'admin']}>
+            <ManagerOrdersPage />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
