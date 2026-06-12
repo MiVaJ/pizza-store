@@ -14,8 +14,9 @@ class Settings(BaseSettings):
 
     # Pydantic будет автоматически читпть настройки из файла .env
     model_config = SettingsConfigDict(
-        env_file=ENV_FILE_PATH, env_file_encoding="utf-8", extra="ignore",
-        env_file_required=False,
+        env_file=ENV_FILE_PATH,
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
 

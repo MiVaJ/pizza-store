@@ -1,6 +1,7 @@
 import pytest
-from src.schemas.order import OrderStatusUpdate
+
 from src.models.order import OrderStatus
+from src.schemas.order import OrderStatusUpdate
 
 
 def test_valid_transition_pending_to_cooking():
@@ -29,14 +30,17 @@ def test_same_status_is_valid():
     update.validate_transition(current_status=OrderStatus.PENDING)
 
 
-@pytest.mark.parametrize("current,new", [
-    (OrderStatus.COMPLETED, OrderStatus.PENDING),
-    (OrderStatus.COMPLETED, OrderStatus.COOKING),
-    (OrderStatus.CANCELLED, OrderStatus.COOKING),
-    (OrderStatus.PENDING,   OrderStatus.COMPLETED),
-    (OrderStatus.COOKING,   OrderStatus.PENDING),
-    (OrderStatus.DELIVERING, OrderStatus.PENDING),
-])
+@pytest.mark.parametrize(
+    "current,new",
+    [
+        (OrderStatus.COMPLETED, OrderStatus.PENDING),
+        (OrderStatus.COMPLETED, OrderStatus.COOKING),
+        (OrderStatus.CANCELLED, OrderStatus.COOKING),
+        (OrderStatus.PENDING, OrderStatus.COMPLETED),
+        (OrderStatus.COOKING, OrderStatus.PENDING),
+        (OrderStatus.DELIVERING, OrderStatus.PENDING),
+    ],
+)
 def test_invalid_transitions(current, new):
     """Недопустимые переходы бросают ValueError."""
     update = OrderStatusUpdate(status=new)

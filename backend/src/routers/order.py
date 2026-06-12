@@ -241,4 +241,4 @@ async def get_my_orders(
         .order_by(Order.created_at.desc())
     )
     result = await db.execute(query)
-    return result.scalars().all()
+    return list(result.scalars().all())
