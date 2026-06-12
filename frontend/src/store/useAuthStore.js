@@ -4,6 +4,7 @@ import api from '../core/api';
 export const useAuthStore = create((set) => ({
   user: null,
   isAuth: false,
+  isLoading: true,
 
   // Функция входа в систему
   login: async (loginData) => {
@@ -30,10 +31,10 @@ export const useAuthStore = create((set) => ({
   checkAuth: async () => {
     try {
       const response = await api.get('/api/auth/me', { _skipRefresh: true });
-      set({ user: response.data, isAuth: true });
+      set({ user: response.data, isAuth: true, isLoading: false });
     } catch (error) {
       // Если даже после интерцептора запрос упал — сессия полностью мертва
-      set({ user: null, isAuth: false });
+      set({ user: null, isAuth: false, isLoading: false });
     }
   },
 }));
