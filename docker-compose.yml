@@ -2,12 +2,15 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: pizza_postgres
+    env_file:
+    - ./backend/.env
     environment:
-      POSTGRES_USER: pizza_user
-      POSTGRES_PASSWORD: pizza_password
-      POSTGRES_DB: pizza_db
+      DATABASE_URL: postgresql+asyncpg://pizza_user:pizza_password@postgres:5432/pizza_db
     ports:
-      - "5433:5432"
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:

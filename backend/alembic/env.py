@@ -5,6 +5,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
+from src.core.config import settings
 
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -17,10 +18,9 @@ from src.models.user import User  # noqa: F401
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option(
-    "sqlalchemy.url",
-    "postgresql+psycopg://pizza_user:pizza_password@127.0.0.1:5433/pizza_db",
-)
+sync_url = settings.DATABASE_URL.replace("postgresql+asyncpg", "postgresql+psycopg")
+
+config.set_main_option("sqlalchemy.url", sync_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
