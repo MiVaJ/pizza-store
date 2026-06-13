@@ -37,4 +37,7 @@ export const useAuthStore = create((set) => ({
       set({ user: null, isAuth: false, isLoading: false });
     }
   },
+
+  // Полная очистка авторизации
+  clearAuth: () => set({ user: null, isAuth: false, isLoading: false }),
 }));

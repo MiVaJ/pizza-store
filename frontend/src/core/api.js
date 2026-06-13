@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '@/store/useAuthStore';
 
 // Создаем клиент для отправки запросов на FastAPI
 const api = axios.create({
@@ -51,10 +52,8 @@ api.interceptors.response.use(
         } catch (refreshError) {
           isRefreshing = false;
           pendingRequests = [];
-          // Если даже после обновления сессия закрыта, то редиректим для повторного логина
-          if (window.location.pathname !== '/login') {
-            window.location.href = '/login';
-          }
+          // Сбрасываем состояние в любом случае. За редирект отвечает ProtectedRoute
+          useAuthStore.getState().clearAuth();
           return Promise.reject(refreshError);
         }
       } else {
