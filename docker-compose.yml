@@ -18,6 +18,14 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: pizza_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - pizza_network
+
   backend:
     build:
       context: ./backend
@@ -31,6 +39,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - pizza_network
 
