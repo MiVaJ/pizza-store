@@ -48,6 +48,7 @@ uvicorn = "0.48.0"
 watchfiles = "1.2.0"
 websockets = "16.0"
 python-multipart = "^0.0.32"
+redis = "^8.0.0"
 
 [build-system]
 requires = ["poetry-core"]
