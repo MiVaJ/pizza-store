@@ -4,7 +4,10 @@ import '@/index.css';
 import App from '@/App.jsx';
 import { useAuthStore } from '@/store/useAuthStore';
 
-useAuthStore.getState().checkAuth();
+useAuthStore
+  .getState()
+  .checkAuth()
+  .catch(() => {});
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
