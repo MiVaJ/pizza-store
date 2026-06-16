@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str
     SECRET_KEY: str
+    REDIS_URL: str = "redis://localhost:6379/0"
 
     # Pydantic будет автоматически читпть настройки из файла .env
     model_config = SettingsConfigDict(
