@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +12,7 @@ router = APIRouter(prefix="/api/menu", tags=["Меню пиццерии"])
 
 
 @router.get("/", response_model=list[PizzaResponse])
-async def get_menu(db: AsyncSession = Depends(get_db)) -> list[dict]:
+async def get_menu(db: AsyncSession = Depends(get_db)):
     """Получение списка всех доступных пицц для отображения на сайте.
     Результат кэшируется в Redis на 10 минут.
     """
@@ -21,7 +22,7 @@ async def get_menu(db: AsyncSession = Depends(get_db)) -> list[dict]:
         # 1. Сначала пробуем получить данные из кэша
         cached = await get_cached_menu(redis)
         if cached is not None:
-            return cached
+            return JSONResponse(content=cached)
 
         # 2. Если кэш пуст, то делаем запрос в БД
         # Выбираем только те пиццы, которые сейчас есть в наличии
