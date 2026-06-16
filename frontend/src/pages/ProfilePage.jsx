@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import api from '@/core/api';
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState(null);
