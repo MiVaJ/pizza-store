@@ -34,6 +34,7 @@ services:
       - ./backend/.env
     environment:
       DATABASE_URL: postgresql+asyncpg://pizza_user:pizza_password@postgres:5432/pizza_db
+      REDIS_URL: redis://redis:6379/0
     ports:
       - "8000:8000"
     depends_on:
