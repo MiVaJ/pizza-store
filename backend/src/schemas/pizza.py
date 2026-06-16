@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from pydantic import BaseModel, Field, PlainSerializer
+from pydantic import BaseModel, ConfigDict, Field, PlainSerializer
 
 # Тип данных для конвертации копеек в рубли
 RublesInt = Annotated[int, PlainSerializer(lambda x: x // 100, return_type=int)]
@@ -8,6 +8,8 @@ RublesInt = Annotated[int, PlainSerializer(lambda x: x // 100, return_type=int)]
 
 class IngredientResponse(BaseModel):
     """Схема для отправки соусов и ингредиентов."""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int = Field(..., description="Уникальный ID соуса или ингредиента")
     name: str = Field(..., description="Название соуса/ингредиента")
@@ -19,12 +21,11 @@ class IngredientResponse(BaseModel):
         ..., description="Флаг: True — соус для корзины, False — топпинг для пиццы"
     )
 
-    class ConfigDict:
-        from_attributes = True
-
 
 class PizzaResponse(BaseModel):
     """Схема для отправки информации о пицце на фронтенд."""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int = Field(..., description="Уникальный ID пиццы")
     name: str = Field(..., description="Название пиццы")
@@ -39,6 +40,3 @@ class PizzaResponse(BaseModel):
             "Список всех доступных для этой пиццы соусов и дополнительных ингредиентов"
         ),
     )
-
-    class ConfigDict:
-        from_attributes = True
