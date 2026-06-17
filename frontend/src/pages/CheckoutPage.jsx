@@ -153,185 +153,201 @@ export default function CheckoutPage() {
 
   return (
     <section className="mx-auto max-w-lg p-6 space-y-6">
-      {/* Заголовок */}
-      <div>
-        <h1 className="text-2xl font-black text-gray-800">Оформление заказа</h1>
-        <p className="text-sm text-gray-400 mt-1">Проверьте данные доставки</p>
-      </div>
-
-      {/* Форма */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-            Имя получателя
-          </label>
-          <input
-            name="customer_name"
-            value={form.customer_name}
-            onChange={handleChange}
-            placeholder="Иван Петров"
-            className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-800
-              placeholder:text-gray-300 focus:outline-none focus:border-orange-400
-              transition-colors"
-          />
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-            Телефон
-          </label>
-          <input
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            placeholder="+7 900 000-00-00"
-            className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-800
-              placeholder:text-gray-300 focus:outline-none focus:border-orange-400
-              transition-colors"
-          />
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-            Адрес доставки
-          </label>
-          <input
-            name="delivery_address"
-            value={form.delivery_address}
-            onChange={handleChange}
-            placeholder="ул. Пушкина, д. 10, кв. 5"
-            className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-800
-              placeholder:text-gray-300 focus:outline-none focus:border-orange-400
-              transition-colors"
-          />
-        </div>
-      </div>
-
-      {/* Способ оплаты */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
-        <h2 className="text-sm font-semibold text-gray-800">Способ оплаты</h2>
-
-        <div className="space-y-2">
-          {/* Банковская карта */}
-          <button
-            onClick={() => {
-              setUseSavedCard(false);
-              setPaymentType('card');
-            }}
-            className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors
-              cursor-pointer text-left ${
-                paymentType === 'card'
-                  ? 'border-orange-400 bg-orange-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-          >
-            <div
-              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center
-                flex-shrink-0 ${paymentType === 'card' ? 'border-orange-500' : 'border-gray-300'}`}
-            >
-              {paymentType === 'card' && <div className="w-2 h-2 rounded-full bg-orange-500" />}
-            </div>
-            <p className="text-sm font-medium text-gray-800">Банковская карта</p>
-          </button>
-
-          {/* СБП */}
-          <button
-            onClick={() => {
-              setUseSavedCard(false);
-              setPaymentType('sbp');
-            }}
-            className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors
-              cursor-pointer text-left ${
-                paymentType === 'sbp'
-                  ? 'border-orange-400 bg-orange-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-          >
-            <div
-              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center
-                flex-shrink-0 ${paymentType === 'sbp' ? 'border-orange-500' : 'border-gray-300'}`}
-            >
-              {paymentType === 'sbp' && <div className="w-2 h-2 rounded-full bg-orange-500" />}
-            </div>
-            <p className="text-sm font-medium text-gray-800">СБП</p>
-          </button>
-
-          {/* Сохранённая карта (только если есть). */}
-          {savedCard?.has_saved_card && (
-            <button
-              onClick={() => {
-                setUseSavedCard(true);
-                setPaymentType('saved');
-              }}
-              className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors
-              cursor-pointer text-left ${
-                paymentType === 'saved'
-                  ? 'border-orange-400 bg-orange-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div
-                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center
-                flex-shrink-0 ${paymentType === 'saved' ? 'border-orange-500' : 'border-gray-300'}`}
-              >
-                {paymentType === 'saved' && <div className="w-2 h-2 rounded-full bg-orange-500" />}
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-800">{savedCard.card_title}</p>
-                <p className="text-xs text-gray-400">Привязанная карта</p>
-              </div>
-            </button>
-          )}
-        </div>
-
-        {/* Тогл сохранения карты только при оплате новой картой */}
-        {paymentType === 'card' && user && (
-          <button
-            onClick={() => setSaveCard((prev) => !prev)}
-            className="w-full flex items-center justify-between p-3 rounded-xl border
-              border-gray-100 hover:border-gray-200 transition-colors cursor-pointer"
-          >
-            <span className="text-sm text-gray-600">Сохранить карту для быстрой оплаты</span>
-            <div
-              className={`w-10 h-6 rounded-full transition-colors flex items-center px-1
-              ${saveCard ? 'bg-orange-500' : 'bg-gray-200'}`}
-            >
-              <div
-                className={`w-4 h-4 rounded-full bg-white shadow transition-transform
-                ${saveCard ? 'translate-x-4' : 'translate-x-0'}`}
+      {!showWidget && (
+        <>
+          {/* Заголовок */}
+          <div>
+            <h1 className="text-2xl font-black text-gray-800">Оформление заказа</h1>
+            <p className="text-sm text-gray-400 mt-1">Проверьте данные доставки</p>
+          </div>
+          {/* Форма */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Имя получателя
+              </label>
+              <input
+                name="customer_name"
+                value={form.customer_name}
+                onChange={handleChange}
+                placeholder="Иван Петров"
+                className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-800
+                  placeholder:text-gray-300 focus:outline-none focus:border-orange-400
+                  transition-colors"
               />
             </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Телефон
+              </label>
+              <input
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                placeholder="+7 900 000-00-00"
+                className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-800
+                  placeholder:text-gray-300 focus:outline-none focus:border-orange-400
+                  transition-colors"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Адрес доставки
+              </label>
+              <input
+                name="delivery_address"
+                value={form.delivery_address}
+                onChange={handleChange}
+                placeholder="ул. Пушкина, д. 10, кв. 5"
+                className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-800
+                  placeholder:text-gray-300 focus:outline-none focus:border-orange-400
+                  transition-colors"
+              />
+            </div>
+          </div>
+          {/* Способ оплаты */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
+            <h2 className="text-sm font-semibold text-gray-800">Способ оплаты</h2>
+
+            <div className="space-y-2">
+              {/* Банковская карта */}
+              <button
+                onClick={() => {
+                  setUseSavedCard(false);
+                  setPaymentType('card');
+                }}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors
+                cursor-pointer text-left ${
+                  paymentType === 'card'
+                    ? 'border-orange-400 bg-orange-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div
+                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center
+                  flex-shrink-0 ${paymentType === 'card' ? 'border-orange-500' : 'border-gray-300'}`}
+                >
+                  {paymentType === 'card' && <div className="w-2 h-2 rounded-full bg-orange-500" />}
+                </div>
+                <p className="text-sm font-medium text-gray-800">Банковская карта</p>
+              </button>
+
+              {/* СБП */}
+              <button
+                onClick={() => {
+                  setUseSavedCard(false);
+                  setPaymentType('sbp');
+                }}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors
+                cursor-pointer text-left ${
+                  paymentType === 'sbp'
+                    ? 'border-orange-400 bg-orange-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div
+                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center
+                  flex-shrink-0 ${paymentType === 'sbp' ? 'border-orange-500' : 'border-gray-300'}`}
+                >
+                  {paymentType === 'sbp' && <div className="w-2 h-2 rounded-full bg-orange-500" />}
+                </div>
+                <p className="text-sm font-medium text-gray-800">СБП</p>
+              </button>
+
+              {/* Сохранённая карта (только если есть). */}
+              {savedCard?.has_saved_card && (
+                <button
+                  onClick={() => {
+                    setUseSavedCard(true);
+                    setPaymentType('saved');
+                  }}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors
+                  cursor-pointer text-left ${
+                    paymentType === 'saved'
+                      ? 'border-orange-400 bg-orange-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center
+                    flex-shrink-0
+                    ${paymentType === 'saved' ? 'border-orange-500' : 'border-gray-300'}`}
+                  >
+                    {paymentType === 'saved' && (
+                      <div className="w-2 h-2 rounded-full bg-orange-500" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">{savedCard.card_title}</p>
+                    <p className="text-xs text-gray-400">Привязанная карта</p>
+                  </div>
+                </button>
+              )}
+            </div>
+
+            {/* Тогл сохранения карты только при оплате новой картой */}
+            {paymentType === 'card' && user && (
+              <button
+                onClick={() => setSaveCard((prev) => !prev)}
+                className="w-full flex items-center justify-between p-3 rounded-xl border
+                  border-gray-100 hover:border-gray-200 transition-colors cursor-pointer"
+              >
+                <span className="text-sm text-gray-600">Сохранить карту для быстрой оплаты</span>
+                <div
+                  className={`w-10 h-6 rounded-full transition-colors flex items-center px-1
+                  ${saveCard ? 'bg-orange-500' : 'bg-gray-200'}`}
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white shadow transition-transform
+                    ${saveCard ? 'translate-x-4' : 'translate-x-0'}`}
+                  />
+                </div>
+              </button>
+            )}
+
+            {!user && (
+              <p className="text-xs text-gray-400 px-1">Войдите в аккаунт чтобы сохранить карту</p>
+            )}
+          </div>
+          {/* Состав заказа */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
+            <h2 className="text-sm font-semibold text-gray-800">Состав заказа</h2>
+            <ul className="space-y-2">
+              {items.map((item) => (
+                <li key={item.id} className="flex justify-between text-sm">
+                  <span className="text-gray-700">
+                    {item.name}
+                    {item.quantity > 1 && <span className="text-gray-400"> × {item.quantity}</span>}
+                  </span>
+                  <span className="font-semibold text-gray-800">
+                    {(item.price * item.quantity).toLocaleString('ru-RU')} ₽
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="border-t border-gray-100 pt-3 flex justify-between">
+              <span className="text-sm font-medium text-gray-400">Итого</span>
+              <span className="text-lg font-black text-gray-900">
+                {totalPrice.toLocaleString('ru-RU')} ₽
+              </span>
+            </div>
+          </div>
+          {/* Ошибка */}
+          {error && <p className="text-sm text-red-500 bg-red-50 rounded-xl px-4 py-3">{error}</p>}
+          {/* Кнопка */}
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="w-full h-12 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300
+              text-white font-bold text-sm rounded-xl transition-colors active:scale-[0.99]
+              duration-150 cursor-pointer"
+          >
+            {loading ? 'Оформляем...' : 'Перейти к оплате'}
           </button>
-        )}
-
-        {!user && (
-          <p className="text-xs text-gray-400 px-1">Войдите в аккаунт чтобы сохранить карту</p>
-        )}
-      </div>
-
-      {/* Состав заказа */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
-        <h2 className="text-sm font-semibold text-gray-800">Состав заказа</h2>
-        <ul className="space-y-2">
-          {items.map((item) => (
-            <li key={item.id} className="flex justify-between text-sm">
-              <span className="text-gray-700">
-                {item.name}
-                {item.quantity > 1 && <span className="text-gray-400"> × {item.quantity}</span>}
-              </span>
-              <span className="font-semibold text-gray-800">
-                {(item.price * item.quantity).toLocaleString('ru-RU')} ₽
-              </span>
-            </li>
-          ))}
-        </ul>
-        <div className="border-t border-gray-100 pt-3 flex justify-between">
-          <span className="text-sm font-medium text-gray-400">Итого</span>
-          <span className="text-lg font-black text-gray-900">
-            {totalPrice.toLocaleString('ru-RU')} ₽
-          </span>
-        </div>
-      </div>
+        </>
+      )}
 
       {/* Виджет оплаты */}
       {showWidget && (
@@ -339,20 +355,6 @@ export default function CheckoutPage() {
           <div id="payment-widget" />
         </div>
       )}
-
-      {/* Ошибка */}
-      {error && <p className="text-sm text-red-500 bg-red-50 rounded-xl px-4 py-3">{error}</p>}
-
-      {/* Кнопка */}
-      <button
-        onClick={handleSubmit}
-        disabled={loading}
-        className="w-full h-12 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white
-          font-bold text-sm rounded-xl transition-colors active:scale-[0.99] duration-150
-          cursor-pointer"
-      >
-        {loading ? 'Оформляем...' : 'Подтвердить заказ'}
-      </button>
     </section>
   );
 }
