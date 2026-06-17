@@ -9,6 +9,7 @@ class PaymentResult:
     payment_id: str  # ID платежа в системе провайдера
     confirmation_url: str  # URL куда редиректить пользователя для оплаты
     status: str  # pending / succeeded / cancelled
+    confirmation_token: str | None = None
 
 
 @dataclass

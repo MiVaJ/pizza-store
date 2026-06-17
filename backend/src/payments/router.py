@@ -100,6 +100,7 @@ async def create_payment(
     return PaymentResponse(
         payment_id=payment_result.payment_id,
         confirmation_url=payment_result.confirmation_url,
+        confirmation_token=payment_result.confirmation_token,
         status=payment_result.status,
     )
 
