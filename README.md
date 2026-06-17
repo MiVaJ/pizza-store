@@ -5,7 +5,9 @@
 ## Стек технологий
 
 - **Backend**: FastAPI, SQLAlchemy 2.0 (Async), Asyncpg, Alembic, PostgreSQL (в Docker)
+- **Task Queue**: Celery, Celery Beat, Redis (брокер и кэш)
 - **Frontend**: React (Vite), Tailwind CSS, Zustand, Axios
+- **Инфраструктура**: Docker, Docker Compose, GitHub Actions (CI)
 - **Мониторинг**: Sentry (логирование ошибок), Яндекс Метрика (аналитика целей)
 
 ## Переменные окружения
@@ -31,9 +33,12 @@ _Обязательно укажите `SECRET_KEY` - без него автор
 docker compose up --build
 ```
 
-Это поднимет три контейнера:
+Это поднимет все контейнеры:
 
 - **postgres** - база данных на порту `5433`
+- **redis** - брокер задач и кэш на порту `6379`
+- **celery_worker** - воркер фоновых задач
+- **celery_beat** - планировщик задач
 - **backend** - FastAPI на порту `8000`
 - **frontend** - React-приложение на порту `5173`
 
@@ -163,6 +168,27 @@ _Сайт откроется по адресу: http://localhost:5173_
 2. Измените поле `role` напрямую в базе данных (через любой DB-клиент, например DBeaver или psql)
 
 _Эндпоинт для смены роли через API пока не реализован - это планируется добавить в будущих версиях._
+
+## Фоновые задачи (Celery)
+
+Проект использует Celery Beat для автоматического выполнения задач по расписанию.
+
+### Автоматическая отмена заказов
+
+Заказы со статусом `pending` автоматически отменяются через 30 минут после создания.
+Задача запускается каждую минуту через Celery Beat, брокер - Redis.
+
+Для локального запуска воркера и планировщика вне Docker:
+
+```bash
+cd backend
+
+# Воркер
+poetry run celery -A src.worker.celery_app worker --loglevel=info
+
+# Планировщик (в отдельном терминале)
+poetry run celery -A src.worker.celery_app beat --loglevel=info
+```
 
 ## Качество кода и Линтеры (Бэкенд)
 
