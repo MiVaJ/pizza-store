@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    # ЮКасса
+    YOOKASSA_SHOP_ID: str = ""
+    YOOKASSA_SECRET_KEY: str = ""
+    YOOKASSA_RETURN_URL: str = "http://localhost:5173/payment/success"
+
     # Pydantic будет автоматически читпть настройки из файла .env
     model_config = SettingsConfigDict(
         env_file=ENV_FILE_PATH,

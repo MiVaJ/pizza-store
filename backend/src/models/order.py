@@ -40,6 +40,10 @@ class Order(Base):
     status: Mapped[OrderStatus] = mapped_column(
         Enum(OrderStatus), default=OrderStatus.PENDING, nullable=False
     )
+    # ID платежа в платёжной системе
+    payment_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, default=None
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

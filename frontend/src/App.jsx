@@ -7,6 +7,7 @@ import ProfilePage from '@/pages/ProfilePage';
 import CheckoutPage from '@/pages/CheckoutPage';
 import RegisterPage from '@/pages/RegisterPage';
 import ManagerOrdersPage from '@/pages/ManagerOrdersPage';
+import PaymentSuccessPage from '@/pages/PaymentSuccessPage';
 
 // Общая структура сайта
 function Layout() {
@@ -63,6 +64,10 @@ const router = createBrowserRouter([
             <ManagerOrdersPage />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: '/payment/success',
+        element: <PaymentSuccessPage />, // Страница успешной оплаты заказа
       },
     ],
   },

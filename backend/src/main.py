@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.database import async_session
 from src.core.init_db import create_initial_admin
+from src.payments.router import router as payments_router
 from src.routers.auth import router as auth_router
 from src.routers.menu import router as menu_router
 from src.routers.order import router as order_router
@@ -41,6 +42,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(menu_router)
 app.include_router(order_router)
+app.include_router(payments_router)
 
 
 @app.get("/api/health")
