@@ -5,6 +5,7 @@ from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.database import Base
+from src.models.user import User
 
 
 class UserSession(Base):
@@ -33,4 +34,4 @@ class UserSession(Base):
     )
 
     # Связь с моделью пользователя
-    user = relationship("User", backref="sessions")
+    user: Mapped["User"] = relationship(User, backref="sessions")
