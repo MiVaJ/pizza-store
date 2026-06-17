@@ -90,6 +90,7 @@ async def create_payment(
         description=f"Оплата заказа №{order.id} в ПиццаТут",
         save_payment_method=data.save_card,
         payment_method_id=payment_method_id,
+        payment_type=data.payment_type,
     )
 
     # 4. Сохраняем payment_id в заказе

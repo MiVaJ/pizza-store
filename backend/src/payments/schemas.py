@@ -7,6 +7,7 @@ class CreatePaymentRequest(BaseModel):
     order_id: int = Field(..., description="ID заказа")
     save_card: bool = Field(False, description="Привязать карту к аккаунту")
     use_saved_card: bool = Field(False, description="Оплатить сохранённой картой")
+    payment_type: str = Field("card", description="Тип оплаты: card, sbp, saved")
 
 
 class PaymentResponse(BaseModel):

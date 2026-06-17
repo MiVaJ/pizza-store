@@ -20,6 +20,7 @@ class YookassaProvider(BasePaymentProvider):
         description: str,
         save_payment_method: bool = False,
         payment_method_id: str | None = None,
+        payment_type: str = "card",
     ) -> PaymentResult:
         """Создать платёж в ЮКассе."""
 
@@ -43,6 +44,9 @@ class YookassaProvider(BasePaymentProvider):
                 "return_url": settings.YOOKASSA_RETURN_URL,
             }
             payment_data["save_payment_method"] = save_payment_method
+
+            if payment_type == "sbp":
+                payment_data["payment_method_data"] = {"type": "sbp"}
 
         payment = Payment.create(payment_data, str(uuid.uuid4()))
 
