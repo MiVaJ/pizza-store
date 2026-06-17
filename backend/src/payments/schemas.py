@@ -1,0 +1,24 @@
+from pydantic import BaseModel, Field
+
+
+class CreatePaymentRequest(BaseModel):
+    """Схема запроса на создание платежа для заказа."""
+
+    order_id: int = Field(..., description="ID заказа")
+    save_card: bool = Field(False, description="Привязать карту к аккаунту")
+    use_saved_card: bool = Field(False, description="Оплатить сохранённой картой")
+
+
+class PaymentResponse(BaseModel):
+    """Схема ответа с данными созданного платежа."""
+
+    payment_id: str = Field(..., description="ID платежа в системе провайдера")
+    confirmation_url: str = Field(..., description="URL для редиректа на оплату")
+    status: str = Field(..., description="Статус платежа")
+
+
+class SavedCardResponse(BaseModel):
+    """Схема получения информации о привязанной карте пользователя."""
+
+    has_saved_card: bool
+    card_title: str | None = None
