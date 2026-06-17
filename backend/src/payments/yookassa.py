@@ -40,10 +40,9 @@ class YookassaProvider(BasePaymentProvider):
         else:
             # Обычная оплата с возможностью привязки карты
             payment_data["confirmation"] = {
-                "type": "redirect",
-                "return_url": settings.YOOKASSA_RETURN_URL,
+                "type": "embedded",
             }
-            payment_data["save_payment_method"] = save_payment_method
+            payment_data["return_url"] = settings.YOOKASSA_RETURN_URL
 
             if payment_type == "sbp":
                 payment_data["payment_method_data"] = {"type": "sbp"}
@@ -51,12 +50,18 @@ class YookassaProvider(BasePaymentProvider):
         payment = Payment.create(payment_data, str(uuid.uuid4()))
 
         confirmation_url = ""
+        confirmation_token = None
+        
         if hasattr(payment, "confirmation") and payment.confirmation:
-            confirmation_url = payment.confirmation.confirmation_url
+            # При embedded - только токен, url нет
+            confirmation_token = payment.confirmation.confirmation_token
+            # При redirect - только url, токена нет
+            confirmation_url = getattr(payment.confirmation, "confirmation_url", "")
 
         return PaymentResult(
             payment_id=payment.id,
             confirmation_url=confirmation_url,
+            confirmation_token=confirmation_token,
             status=payment.status,
         )
 
