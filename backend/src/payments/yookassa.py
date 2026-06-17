@@ -51,7 +51,7 @@ class YookassaProvider(BasePaymentProvider):
 
         confirmation_url = ""
         confirmation_token = None
-        
+
         if hasattr(payment, "confirmation") and payment.confirmation:
             # При embedded - только токен, url нет
             confirmation_token = payment.confirmation.confirmation_token
