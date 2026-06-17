@@ -26,6 +26,42 @@ services:
     networks:
       - pizza_network
 
+  celery_worker:
+    build:
+      context: ./backend
+    container_name: pizza_celery_worker
+    command: celery -A src.worker.celery_app worker --loglevel=info
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://pizza_user:pizza_password@postgres:5432/pizza_db
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - pizza_network
+
+  celery_beat:
+    build:
+      context: ./backend
+    container_name: pizza_celery_beat
+    command: celery -A src.worker.celery_app beat --loglevel=info
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://pizza_user:pizza_password@postgres:5432/pizza_db
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - pizza_network
+
   backend:
     build:
       context: ./backend
