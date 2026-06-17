@@ -47,6 +47,10 @@ export default function CheckoutPage() {
           controlPrimary: '#f97316',
         },
       },
+      on_success: () => {
+        clearCart();
+        navigate('/payment/success');
+      },
       error_callback: (error) => {
         console.error('Ошибка виджета:', error);
         setError('Ошибка при инициализации оплаты');
