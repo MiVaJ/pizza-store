@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -21,6 +21,43 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [orderPlaced, setOrderPlaced] = useState(false);
+
+  const [showWidget, setShowWidget] = useState(false);
+  const [confirmationToken, setConfirmationToken] = useState(null);
+  const widgetRef = useRef(null);
+
+  // Загрузка SDK ЮКассы при монтировании
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://yookassa.ru/checkout-widget/v1/checkout-widget.js';
+    script.async = true;
+    document.head.appendChild(script);
+    return () => document.head.removeChild(script);
+  }, []);
+
+  // Инициализация виджета когда есть токен
+  useEffect(() => {
+    if (!confirmationToken || !showWidget) return;
+
+    const checkout = new window.YooMoneyCheckoutWidget({
+      confirmation_token: confirmationToken,
+      return_url: 'http://localhost:5173/payment/success',
+      customization: {
+        colors: {
+          controlPrimary: '#f97316',
+        },
+      },
+      error_callback: (error) => {
+        console.error('Ошибка виджета:', error);
+        setError('Ошибка при инициализации оплаты');
+        setShowWidget(false);
+      },
+    });
+
+    checkout.render('payment-widget');
+
+    return () => checkout.destroy();
+  }, [confirmationToken, showWidget]);
 
   // Загружаем информацию о сохранённой карте
   useEffect(() => {
@@ -75,7 +112,6 @@ export default function CheckoutPage() {
       });
 
       const orderId = orderRes.data.id;
-      clearCart();
 
       // Создаём платёж
       const paymentRes = await api.post('/api/payments/create', {
@@ -86,13 +122,15 @@ export default function CheckoutPage() {
       });
 
       // Если производится автосписание с сохранённой карты, то сразу переходим на профиль
-      if (useSavedCard && savedCard?.has_saved_card) {
+      if (paymentType === 'saved') {
+        clearCart();
         navigate('/profile');
         return;
       }
 
-      // Если нет сохранённой карты, то редиректим на ЮКассу
-      window.location.href = paymentRes.data.confirmation_url;
+      // Если нет сохранённой карты, то показываетм виджет ЮКассы
+      setConfirmationToken(paymentRes.data.confirmation_token);
+      setShowWidget(true);
     } catch (err) {
       setOrderPlaced(false);
       const detail = err.response?.data?.detail;
@@ -290,6 +328,13 @@ export default function CheckoutPage() {
           </span>
         </div>
       </div>
+
+      {/* Виджет оплаты */}
+      {showWidget && (
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div id="payment-widget" />
+        </div>
+      )}
 
       {/* Ошибка */}
       {error && <p className="text-sm text-red-500 bg-red-50 rounded-xl px-4 py-3">{error}</p>}
