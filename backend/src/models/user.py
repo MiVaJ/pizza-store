@@ -28,3 +28,13 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(
         Enum(UserRole), default=UserRole.CLIENT, nullable=False
     )
+
+    # Привязанная карта для автосписания
+    payment_method_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, default=None
+    )
+
+    # Отображаемое название карты
+    payment_method_title: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, default=None
+    )
