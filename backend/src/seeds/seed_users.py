@@ -9,25 +9,25 @@ from src.models.user import User, UserRole
 # Набор пользователей по ролям
 TEST_USERS = [
     {
-        "email": "client@pizza.test",
+        "email": "client@pizzatut.ru",
         "password": "test123",
         "name": "Клиент Тестов",
         "role": UserRole.CLIENT,
     },
     {
-        "email": "manager@pizza.test",
+        "email": "manager@pizzatut.ru",
         "password": "test123",
         "name": "Менеджер Тестов",
         "role": UserRole.MANAGER,
     },
     {
-        "email": "courier@pizza.test",
+        "email": "courier@pizzatut.ru",
         "password": "test123",
         "name": "Курьер Тестов",
         "role": UserRole.COURIER,
     },
     {
-        "email": "admin@pizza.test",
+        "email": "admin@pizzatut.ru",
         "password": "test123",
         "name": "Админ Тестов",
         "role": UserRole.ADMIN,
