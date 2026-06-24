@@ -119,15 +119,36 @@ _Интерактивная документация (Swagger): http://127.0.0_
 cd backend
 poetry run alembic upgrade head
 ```
+### Первоначальное наполнение данными
 
-#### Первоначальное наполнение меню пиццами (Seeding)
-
-Скрипт добавит в базу данных 5 стартовых пицц для проверки адаптивной сетки фронтенда:
+#### Локально
 
 ```bash
+# Пиццы в меню
 cd backend
 poetry run python -m src.seeds.seed_pizzas
+
+# Тестовые аккаунты для всех ролей
+cd backend
+poetry run python -m src.seeds.seed_users
 ```
+
+#### Docker
+
+```bash
+# Пиццы в меню
+docker compose exec backend poetry run python -m src.seeds.seed_pizzas
+
+# Тестовые аккаунты для всех ролей
+docker compose exec backend poetry run python -m src.seeds.seed_users
+```
+
+| Роль | Email | Пароль |
+|---|---|---|
+| Клиент | client@pizza.test | test123 |
+| Менеджер | manager@pizza.test | test123 |
+| Курьер | courier@pizza.test | test123 |
+| Админ | admin@pizza.test | test123 |
 
 ### 4. Запуск Фронтенда (React + Vite)
 
