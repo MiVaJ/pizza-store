@@ -12,6 +12,7 @@ export default function Header() {
   const navigate = useNavigate();
 
   const isStaff = isAuth && ['manager', 'admin'].includes(user?.role);
+  const isAdmin = isAuth && user?.role === 'admin';
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 p-4 backdrop-blur-md">
@@ -34,6 +35,18 @@ export default function Header() {
                 cursor-pointer select-none hidden sm:block"
             >
               Заказы
+            </button>
+          )}
+
+          {/* Кнопка только для админа */}
+          {isAdmin && (
+            <button
+              onClick={() => navigate('/admin')}
+              className="h-11 px-4 rounded-full border border-gray-200 bg-white text-sm font-medium
+                text-gray-600 hover:border-orange-300 hover:text-orange-500 transition-colors
+                cursor-pointer select-none hidden sm:block"
+            >
+              Пользователи
             </button>
           )}
 
