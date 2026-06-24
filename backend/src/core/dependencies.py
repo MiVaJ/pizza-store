@@ -82,3 +82,4 @@ class RoleChecker:
 
 
 allow_management = RoleChecker([UserRole.ADMIN, UserRole.MANAGER])
+allow_admin = RoleChecker([UserRole.ADMIN])
