@@ -8,6 +8,7 @@ import CheckoutPage from '@/pages/CheckoutPage';
 import RegisterPage from '@/pages/RegisterPage';
 import ManagerOrdersPage from '@/pages/ManagerOrdersPage';
 import PaymentSuccessPage from '@/pages/PaymentSuccessPage';
+import AdminPage from '@/pages/AdminPage';
 
 // Общая структура сайта
 function Layout() {
@@ -45,9 +46,9 @@ const router = createBrowserRouter([
         path: '/profile',
         element: (
           <ProtectedRoute>
-            <ProfilePage /> //Страница профиля
+            <ProfilePage />
           </ProtectedRoute>
-        ),
+        ), //Страница профиля
       },
       {
         path: '/checkout',
@@ -68,6 +69,14 @@ const router = createBrowserRouter([
       {
         path: '/payment/success',
         element: <PaymentSuccessPage />, // Страница успешной оплаты заказа
+      },
+      {
+        path: '/admin',
+        element: (
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminPage />
+          </ProtectedRoute>
+        ), // Админ панель
       },
     ],
   },
