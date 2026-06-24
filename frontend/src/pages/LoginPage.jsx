@@ -17,7 +17,16 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login({ email, password });
-      navigate('/');
+
+      // Выполняем резирект по роли
+      const { user } = useAuthStore.getState();
+      const redirectMap = {
+        client: '/',
+        manager: '/manager/orders',
+        courier: '/courier',
+        admin: '/admin',
+      };
+      navigate(redirectMap[user?.role] ?? '/');
     } catch (err) {
       setError(err.response?.data?.detail || 'Неверная почта или пароль');
     } finally {
